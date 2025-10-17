@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Brand;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class BranchController extends Controller
 {
@@ -26,9 +26,11 @@ class BranchController extends Controller
             switch ($request->sort) {
                 case 'name':
                     $query->orderBy('name');
+
                     break;
                 case 'recent':
                     $query->orderBy('created_at', 'desc');
+
                     break;
                 default:
                     $query->orderBy('name');
@@ -52,7 +54,7 @@ class BranchController extends Controller
             'address' => 'required|string',
             'contact_person' => 'required|string|max:255',
             'contact_number' => 'required|string|max:255',
-            'status' => 'sometimes|string|in:active,inactive'
+            'status' => 'sometimes|string|in:active,inactive',
         ]);
 
         $branch = $brand->branches()->create($validated);
@@ -65,7 +67,7 @@ class BranchController extends Controller
      */
     public function show(Brand $brand, Branch $branch): JsonResponse
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('Login');
         }
         // Ensure the branch belongs to the brand
@@ -91,7 +93,7 @@ class BranchController extends Controller
             'address' => 'required|string',
             'contact_person' => 'required|string|max:255',
             'contact_number' => 'required|string|max:255',
-            'status' => 'sometimes|string|in:active,inactive'
+            'status' => 'sometimes|string|in:active,inactive',
         ]);
 
         $branch->update($validated);
@@ -112,7 +114,7 @@ class BranchController extends Controller
         $branch->delete();
 
         return response()->json([
-            'message' => 'Branch deleted successfully'
+            'message' => 'Branch deleted successfully',
         ]);
     }
 

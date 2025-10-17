@@ -1,11 +1,24 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sales and Inventory Management System
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+<a href="https://github.com/Rzmtmbcmc/Sales-and-Inventory/actions"><img src="https://github.com/Rzmtmbcmc/Sales-and-Inventory/workflows/Laravel%20CI%2FCD/badge.svg" alt="Build Status"></a>
+<a href="https://codecov.io/gh/Rzmtmbcmc/Sales-and-Inventory"><img src="https://codecov.io/gh/Rzmtmbcmc/Sales-and-Inventory/branch/main/graph/badge.svg" alt="Coverage Status"></a>
+<a href="https://github.com/Rzmtmbcmc/Sales-and-Inventory"><img src="https://img.shields.io/github/license/Rzmtmbcmc/Sales-and-Inventory" alt="License"></a>
+<a href="https://github.com/Rzmtmbcmc/Sales-and-Inventory"><img src="https://img.shields.io/github/v/release/Rzmtmbcmc/Sales-and-Inventory" alt="Latest Release"></a>
 </p>
+
+A comprehensive Sales and Inventory Management System built with Laravel, featuring real-time analytics, multi-branch support, and comprehensive testing.
+
+## Features
+
+- 📊 **Real-time Analytics Dashboard**
+- 🏪 **Multi-branch Management**
+- 📦 **Inventory Tracking**
+- 💰 **Sales Management**
+- 👥 **User Role Management**
+- 🔐 **Authentication & Password Reset**
+- 📧 **Email Notifications**
+- 🧪 **Comprehensive Testing Suite**
 
 ## About Laravel
 

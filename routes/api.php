@@ -1,15 +1,13 @@
 <?php
 
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ExpenseController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\UserHeartbeatController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BrandController;
-use App\Http\Controllers\BranchController;
-use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\UserHeartbeatController;
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -21,36 +19,49 @@ use App\Http\Controllers\UserHeartbeatController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-Route::apiResource('managers', App\Http\Controllers\ManagerController::class);
-Route::apiResource('brands', BrandController::class);
-Route::get('brands/{brand}/standard-items', [BrandController::class, 'getStandardItems']);
-Route::put('brands/{brand}/standard-items', [BrandController::class, 'updateStandardItems']);
-Route::apiResource('brands.branches', BranchController::class);
-Route::apiResource('products', App\Http\Controllers\Api\ProductController::class);
-Route::post('products/delete-expired', [App\Http\Controllers\Api\ProductController::class, 'deleteExpiredProducts']);
 
-// Rejected goods routes
-Route::post('rejected-goods', [App\Http\Controllers\RejectedGoodController::class, 'store']);
-Route::get('rejected-goods', [App\Http\Controllers\RejectedGoodController::class, 'index']);
-
-Route::get('orders/final-summary', [OrderController::class, 'finalSummary']);
-Route::get('orders/statistics', [OrderController::class, 'statistics']);
-Route::apiResource('orders', OrderController::class);
-Route::get('branches', function() {
-    return response()->json([
-        'data' => \App\Models\Branch::with('brand')->get()->map(function($branch) {
-            return [
-                'id' => $branch->id,
-                'name' => $branch->name,
-                'brand_name' => $branch->brand->name
-            ];
-        })
-    ]);
+// Manager routes with web middleware for session support (InfinityFree compatibility)
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::apiResource('managers', App\Http\Controllers\ManagerController::class);
 });
-Route::get('productss', function() {
-    return response()->json([
-        'data' => \App\Models\Product::all(['id', 'name','quantity', 'price'])
-    ]);
+
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::apiResource('brands', BrandController::class);
+    Route::get('brands/{brand}/standard-items', [BrandController::class, 'getStandardItems']);
+    Route::put('brands/{brand}/standard-items', [BrandController::class, 'updateStandardItems']);
+    Route::apiResource('brands.branches', BranchController::class);
+    Route::apiResource('products', App\Http\Controllers\Api\ProductController::class);
+    Route::post('products/delete-expired', [App\Http\Controllers\Api\ProductController::class, 'deleteExpiredProducts']);
+
+    // Rejected goods routes
+    Route::post('rejected-goods', [App\Http\Controllers\RejectedGoodController::class, 'store']);
+    Route::get('rejected-goods', [App\Http\Controllers\RejectedGoodController::class, 'index']);
+});
+
+// Orders and Expenses routes - require authentication
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('orders/final-summary', [OrderController::class, 'finalSummary']);
+    Route::get('orders/statistics', [OrderController::class, 'statistics']);
+    Route::apiResource('orders', OrderController::class);
+    Route::apiResource('expenses', ExpenseController::class);
+    
+    Route::get('branches', function () {
+        return response()->json([
+            'data' => \App\Models\Branch::with('brand')->get()->map(function ($branch) {
+                return [
+                    'id' => $branch->id,
+                    'name' => $branch->name,
+                    'brand_name' => $branch->brand->name,
+                ];
+            }),
+        ]);
+    });
+    
+    Route::get('productss', function () {
+        return response()->json([
+            'data' => \App\Models\Product::all(['id', 'name','quantity', 'price']),
+        ]);
+    });
 });
 
 // Heartbeat routes
@@ -59,19 +70,20 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/online-users', [UserHeartbeatController::class, 'getOnlineUsers']);
 });
 
+// Analytics and Dashboard routes - require authentication
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('analytics/sales-data', [App\Http\Controllers\Api\AnalyticsController::class, 'getSalesData']);
+    Route::get('analytics/product-sales', [App\Http\Controllers\Api\AnalyticsController::class, 'getProductSalesData']);
+    Route::get('analytics/top-bottom-brands', [App\Http\Controllers\Api\AnalyticsController::class, 'getTopBottomBrands']);
+    Route::get('analytics/top-bottom-branches', [App\Http\Controllers\Api\AnalyticsController::class, 'getTopBottomBranches']);
+    Route::get('analytics/top-bottom-products', [App\Http\Controllers\Api\AnalyticsController::class, 'getTopBottomProducts']);
 
-
-Route::get('analytics/sales-data', [App\Http\Controllers\Api\AnalyticsController::class, 'getSalesData']);
-Route::get('analytics/product-sales', [App\Http\Controllers\Api\AnalyticsController::class, 'getProductSalesData']);
-Route::get('analytics/top-bottom-brands', [App\Http\Controllers\Api\AnalyticsController::class, 'getTopBottomBrands']);
-Route::get('analytics/top-bottom-branches', [App\Http\Controllers\Api\AnalyticsController::class, 'getTopBottomBranches']);
-Route::get('analytics/top-bottom-products', [App\Http\Controllers\Api\AnalyticsController::class, 'getTopBottomProducts']);
-
-
-Route::get('/dashboard/analytics', [DashboardController::class, 'analytics']);
-Route::get('/dashboard/brands', [DashboardController::class, 'brands']);
-Route::get('/dashboard/branches', [DashboardController::class, 'getBranches']);
-Route::get('/dashboard/products', [DashboardController::class, 'getProducts']);
-Route::middleware(['web', 'auth'])->get('/user', function (Request $request) {
-    return $request->user();
+    Route::get('/dashboard/analytics', [DashboardController::class, 'analytics']);
+    Route::get('/dashboard/brands', [DashboardController::class, 'brands']);
+    Route::get('/dashboard/branches', [DashboardController::class, 'getBranches']);
+    Route::get('/dashboard/products', [DashboardController::class, 'getProducts']);
+    
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 });

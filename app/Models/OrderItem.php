@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,12 +14,12 @@ class OrderItem extends Model
         'name',
         'quantity',
         'price',
-        'product_id'
+        'product_id',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
-        'price' => 'decimal:2'
+        'price' => 'decimal:2',
     ];
 
     public function order()

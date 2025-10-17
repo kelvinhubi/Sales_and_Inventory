@@ -194,14 +194,14 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="managerPhone">Phone</label>
-                                        <input type="tel" class="form-control" id="managerPhone" name="phone">
+                                        <label for="managerPhone">Phone <span class="text-danger">*</span></label>
+                                        <input type="tel" class="form-control" id="managerPhone" name="phone" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="managerPassword">Password</label>
-                                        <input type="password" class="form-control" id="managerPassword" name="password" autocomplete="new-password">
+                                        <label for="managerPassword">Password <span class="text-danger">*</span></label>
+                                        <input type="password" class="form-control" id="managerPassword" name="password" autocomplete="new-password" required>
                                         <small id="passwordHelp" class="form-text text-muted" style="display: none;">Leave blank to keep current password.</small>
                                     </div>
                                 </div>
@@ -209,8 +209,8 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label for="managerNotes">Notes</label>
-                                        <textarea class="form-control" id="managerNotes" name="notes" rows="3" placeholder="Additional notes..."></textarea>
+                                        <label for="managerNotes">Notes <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="managerNotes" name="notes" rows="3" placeholder="Additional notes..." required></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -247,7 +247,6 @@
                         ...options,
                         headers: {
                             'Accept': 'application/json',
-                            'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': csrfToken,
                             'X-Requested-With': 'XMLHttpRequest',
                             ...options.headers
@@ -255,6 +254,7 @@
                         credentials: 'same-origin',
                     };
 
+                    // Handle FormData separately
                     if (!(options.body instanceof FormData)) {
                         fetchOptions.headers['Content-Type'] = 'application/json';
                         if (options.body && typeof options.body !== 'string') {
@@ -262,20 +262,42 @@
                         }
                     }
 
-                    const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        let errorMessage = errorData.message || `HTTP ${response.status}: ${response.statusText}`;
-                        if (response.status === 422 && errorData.errors) {
-                            const errorMessages = Object.values(errorData.errors).flat();
-                            errorMessage = errorMessages.join(' ');
-                        }
-                        throw new Error(errorMessage);
+                    // Use POST with _method for PUT/DELETE to ensure compatibility with InfinityFree
+                    if (options.method === 'PUT' || options.method === 'DELETE') {
+                        const body = fetchOptions.body ? JSON.parse(fetchOptions.body) : {};
+                        body._method = options.method;
+                        fetchOptions.body = JSON.stringify(body);
+                        fetchOptions.method = 'POST';
                     }
 
-                    const responseText = await response.text();
-                    return responseText ? JSON.parse(responseText) : {};
+                    // Add timeout for InfinityFree (30 seconds)
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 30000);
+                    fetchOptions.signal = controller.signal;
+
+                    try {
+                        const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
+                        clearTimeout(timeoutId);
+
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            let errorMessage = errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+                            if (response.status === 422 && errorData.errors) {
+                                const errorMessages = Object.values(errorData.errors).flat();
+                                errorMessage = errorMessages.join(' ');
+                            }
+                            throw new Error(errorMessage);
+                        }
+
+                        const responseText = await response.text();
+                        return responseText ? JSON.parse(responseText) : {};
+                    } catch (fetchError) {
+                        clearTimeout(timeoutId);
+                        if (fetchError.name === 'AbortError') {
+                            throw new Error('Request timeout - please try again');
+                        }
+                        throw fetchError;
+                    }
                 } catch (error) {
                     console.error('API Error:', error);
                     showNotification(`${error.message}`, 'error');
@@ -323,20 +345,80 @@
                 }
             }
 
-            // � Heartbeat Functions
+            // 💓 Heartbeat Functions
+            let heartbeatInterval;
+            let heartbeatFailureCount = 0;
+            const MAX_HEARTBEAT_FAILURES = 3;
+
             async function startHeartbeat() {
                 // Send initial heartbeat
                 await sendHeartbeat();
                 
-                // Set up interval for periodic heartbeats
-                heartbeatInterval = setInterval(sendHeartbeat, 3000);
+                // Set up interval for periodic heartbeats (increased to 30 seconds for InfinityFree compatibility)
+                heartbeatInterval = setInterval(sendHeartbeat, 30000); // Changed from 3000ms to 30000ms
             }
 
             async function sendHeartbeat() {
                 try {
-                    await apiRequest('/heartbeat', { method: 'POST' });
+                    // Check if user is still authenticated before sending heartbeat
+                    const response = await fetch(`${API_BASE_URL}/heartbeat`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        credentials: 'same-origin',
+                    });
+
+                    // If we get HTML response (like login page), user session expired
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        console.warn('Session expired - heartbeat received HTML instead of JSON');
+                        heartbeatFailureCount++;
+                        
+                        // Stop heartbeat after multiple failures to prevent spam
+                        if (heartbeatFailureCount >= MAX_HEARTBEAT_FAILURES) {
+                            if (heartbeatInterval) {
+                                clearInterval(heartbeatInterval);
+                                console.warn('Heartbeat stopped due to repeated authentication failures');
+                            }
+                        }
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        console.warn('Heartbeat failed with status:', response.status);
+                        heartbeatFailureCount++;
+                        
+                        // Stop heartbeat if unauthorized
+                        if (response.status === 401 || response.status === 403) {
+                            if (heartbeatInterval) {
+                                clearInterval(heartbeatInterval);
+                                console.warn('Heartbeat stopped due to authentication error');
+                            }
+                        }
+                        return;
+                    }
+
+                    // Try to parse JSON only if we confirmed it's JSON
+                    await response.json();
+                    
+                    // Reset failure count on success
+                    heartbeatFailureCount = 0;
                 } catch (error) {
                     console.error('Heartbeat failed:', error);
+                    heartbeatFailureCount++;
+                    
+                    // Stop heartbeat after too many failures
+                    if (heartbeatFailureCount >= MAX_HEARTBEAT_FAILURES) {
+                        if (heartbeatInterval) {
+                            clearInterval(heartbeatInterval);
+                            console.warn('Heartbeat stopped due to repeated errors');
+                        }
+                    }
+                    // Don't show notification for heartbeat failures to avoid spam
                 }
             }
 
@@ -412,14 +494,31 @@
                 try {
                     const response = await apiRequest(endpoint);
                     
-                    // Get online status for all managers
-                    const onlineStatus = await apiRequest('/online-users');
-                    
-                    // Create a map of online status
-                    const onlineStatusMap = onlineStatus.reduce((acc, user) => {
-                        acc[user.id] = user.is_online;
-                        return acc;
-                    }, {});
+                    // Try to get online status, but don't fail if it errors
+                    let onlineStatusMap = {};
+                    try {
+                        const onlineResponse = await fetch(`${API_BASE_URL}/online-users`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            credentials: 'same-origin',
+                        });
+
+                        // Check if response is JSON before parsing
+                        const contentType = onlineResponse.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            const onlineStatus = await onlineResponse.json();
+                            onlineStatusMap = onlineStatus.reduce((acc, user) => {
+                                acc[user.id] = user.is_online;
+                                return acc;
+                            }, {});
+                        }
+                    } catch (error) {
+                        console.warn('Could not fetch online status:', error);
+                        // Continue without online status
+                    }
 
                     // Merge online status with manager data
                     if (response.data) {

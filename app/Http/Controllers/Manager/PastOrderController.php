@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers\Manager;
 
-use App\Http\Controllers\Controller;
-use App\Models\PastOrder;
-use App\Models\Brand;
-use App\Models\Branch;
 use App\Exports\PastOrdersExport;
+use App\Http\Controllers\Controller;
+use App\Models\Branch;
+use App\Models\Brand;
+use App\Models\PastOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PastOrderController extends Controller
 {
     public function index()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
 
@@ -28,12 +28,12 @@ class PastOrderController extends Controller
             'start_date' => 'nullable|date|before_or_equal:today',
             'end_date' => 'nullable|date|before_or_equal:today',
         ];
-        
+
         // Only validate end_date against start_date if start_date is provided
         if (request()->filled('start_date')) {
             $validation['end_date'] .= '|after_or_equal:start_date';
         }
-        
+
         request()->validate($validation);
 
         $query = PastOrder::with(['items.product', 'brand', 'branch']);
@@ -96,7 +96,7 @@ class PastOrderController extends Controller
 
     public function show(PastOrder $pastOrder)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
 
@@ -109,7 +109,7 @@ class PastOrderController extends Controller
 
     public function exportSelected(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
 
@@ -120,24 +120,24 @@ class PastOrderController extends Controller
             'start_date' => 'nullable|date|before_or_equal:today',
             'end_date' => 'nullable|date|before_or_equal:today',
         ];
-        
+
         // Only validate end_date against start_date if start_date is provided
         if ($request->filled('start_date')) {
             $validation['end_date'] .= '|after_or_equal:start_date';
         }
-        
+
         $request->validate($validation);
 
         // Get selected order IDs from request
         $selectedOrderIds = explode(',', $request->input('selected_orders'));
-        
+
         // Debug: Log what we received
         \Log::info('Export Selected - Received data:', [
             'selected_orders' => $request->input('selected_orders'),
             'parsed_ids' => $selectedOrderIds,
-            'count' => count($selectedOrderIds)
+            'count' => count($selectedOrderIds),
         ]);
-        
+
         // Validate that we have selections
         if (empty($selectedOrderIds) || (count($selectedOrderIds) == 1 && empty($selectedOrderIds[0]))) {
             return redirect()->back()->with('error', 'No orders selected for export.');
@@ -145,7 +145,7 @@ class PastOrderController extends Controller
 
         // Filter out empty values and ensure they're integers
         $selectedOrderIds = array_filter(array_map('intval', $selectedOrderIds));
-        
+
         if (empty($selectedOrderIds)) {
             return redirect()->back()->with('error', 'Invalid order selection.');
         }
@@ -202,17 +202,17 @@ class PastOrderController extends Controller
         // Debug: Log what we're exporting
         \Log::info('Exporting orders:', [
             'count' => $pastOrders->count(),
-            'orders' => $pastOrders->pluck('id')->toArray()
+            'orders' => $pastOrders->pluck('id')->toArray(),
         ]);
 
         $fileName = 'selected_past_orders_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
+
         return Excel::download(new PastOrdersExport($pastOrders), $fileName);
     }
 
     public function destroy(PastOrder $pastOrder)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
 
@@ -221,30 +221,31 @@ class PastOrderController extends Controller
         try {
             // Delete related order items first
             $pastOrder->items()->delete();
-            
+
             // Delete the past order
             $pastOrder->delete();
 
             return redirect()->route('manager.past-orders.index')->with('success', 'Past order deleted successfully.');
         } catch (\Exception $e) {
             Log::error('Failed to delete past order: ' . $e->getMessage());
+
             return redirect()->route('manager.past-orders.index')->with('error', 'Failed to delete past order.');
         }
     }
 
     public function deleteSelected(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
 
         $this->authorize('deleteAny', PastOrder::class);
 
         $selectedOrderIds = explode(',', $request->input('selected_orders'));
-        
+
         // Filter out empty values and ensure they're integers
         $selectedOrderIds = array_filter(array_map('intval', $selectedOrderIds));
-        
+
         if (empty($selectedOrderIds)) {
             return redirect()->back()->with('error', 'No orders selected for deletion.');
         }
@@ -252,35 +253,36 @@ class PastOrderController extends Controller
         try {
             // Delete related order items first
             DB::table('past_order_items')->whereIn('past_order_id', $selectedOrderIds)->delete();
-            
+
             // Delete the past orders
             $deletedCount = PastOrder::whereIn('id', $selectedOrderIds)->delete();
 
             return redirect()->route('manager.past-orders.index')->with('success', "Successfully deleted {$deletedCount} past order(s).");
         } catch (\Exception $e) {
             Log::error('Failed to delete selected past orders: ' . $e->getMessage());
+
             return redirect()->route('manager.past-orders.index')->with('error', 'Failed to delete selected past orders.');
         }
     }
 
     public function testDelete(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
 
         $selectedOrderIds = $request->input('selected_orders');
-        
+
         // Debug log
         Log::info('Test Delete received:', [
             'selected_orders' => $selectedOrderIds,
-            'type' => gettype($selectedOrderIds)
+            'type' => gettype($selectedOrderIds),
         ]);
 
         return response()->json([
             'received' => $selectedOrderIds,
             'type' => gettype($selectedOrderIds),
-            'exploded' => explode(',', $selectedOrderIds)
+            'exploded' => explode(',', $selectedOrderIds),
         ]);
     }
 }

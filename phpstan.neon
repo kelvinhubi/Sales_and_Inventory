@@ -1,0 +1,20 @@
+parameters:
+    level: 5
+    paths:
+        - app
+        - config
+        - database
+        - routes
+    excludePaths:
+        - app/Http/Middleware/TrustProxies.php
+        - app/Http/Middleware/TrimStrings.php
+        - bootstrap
+        - storage
+        - vendor
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        - '#Call to an undefined method App\\Models\\.*::[a-zA-Z0-9_]+\(\)#'
+        - '#Access to an undefined property App\\Models\\.*::\$[a-zA-Z0-9_]+#'
+        - '#Undefined variable: \$[a-zA-Z0-9_]+#'

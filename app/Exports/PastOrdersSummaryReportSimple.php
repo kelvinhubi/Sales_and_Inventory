@@ -22,17 +22,17 @@ class PastOrdersSummaryReportSimple implements FromArray, WithHeadings
         if ($this->pastOrders->isEmpty()) {
             $startDate = $this->dateRange['start'] ?? 'Not specified';
             $endDate = $this->dateRange['end'] ?? 'Not specified';
-            
+
             return [
                 ['No orders found for the selected criteria'],
                 ['Start Date: ' . $startDate],
                 ['End Date: ' . $endDate],
                 ['Generated: ' . now()->format('Y-m-d H:i:s')],
                 [''],
-                ['Please adjust your date range or selection criteria.']
+                ['Please adjust your date range or selection criteria.'],
             ];
         }
-        
+
         // Simple test data for non-empty case
         return [
             ['Test Product 1', 'Test Branch 1', 10, 100.00],
@@ -46,7 +46,7 @@ class PastOrdersSummaryReportSimple implements FromArray, WithHeadings
         if ($this->pastOrders->isEmpty()) {
             return ['Information'];
         }
-        
+
         return ['Product Name', 'Branch', 'Quantity', 'Total'];
     }
 }

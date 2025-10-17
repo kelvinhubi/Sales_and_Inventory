@@ -285,6 +285,8 @@
                                         <th>ID</th>
                                         <th>Product Name</th>
                                         <th>Price</th>
+                                        <th>Original Cost</th>
+                                        <th>Unit Profit</th>
                                         <th>Quantity</th>
                                         <th hidden>Perishable</th>
                                         <th hidden>Expiration Date</th>
@@ -339,6 +341,16 @@
                                         min="0" required>
                                     <div class="invalid-feedback">Please provide a valid price.</div>
                                 </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="productOriginalCost">Original Cost</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input type="number" class="form-control" id="productOriginalCost" step="0.01" min="0" placeholder="0.00">
+                                </div>
+                                <small class="form-text text-muted">Optional. Used to compute Unit Profit = Price − Original Cost.</small>
                             </div>
                             <div class="form-group">
                                 <label for="productQuantity">Quantity <span class="text-danger">*</span></label>
@@ -514,7 +526,12 @@
                 try {
                     const url = API_CONFIG.baseURL + endpoint;
                     const config = {
-                        headers: API_CONFIG.headers,
+                        headers: {
+                            ...API_CONFIG.headers,
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
+                        },
                         ...options
                     };
 
@@ -542,7 +559,8 @@
                     per_page: productsPerPage,
                     search: search,
                     perishable: perishable,
-                    stock: stock
+                    stock: stock,
+                    _t: Date.now() // Cache busting parameter
                 });
 
                 const response = await apiRequest(`${API_CONFIG.endpoints.products}?${params}`);
@@ -702,11 +720,17 @@
                     const quantityClass = product.quantity === 0 ? 'out-of-stock' :
                         product.quantity <= 10 ? 'low-stock' : '';
 
+                    // Use original_price from API response and calculate profit
+                    const originalCost = product.original_price ? Number(product.original_price) : 0;
+                    const unitProfit = Number(product.price) - originalCost;
+                    
                     return `
                    <tr>
                        <td><strong>#${product.id}</strong></td>
                        <td>${product.name}</td>
-                       <td><span class="product-price">$${parseFloat(product.price).toFixed(2)}</span></td>
+                       <td><span class="product-price">₱${parseFloat(product.price).toFixed(2)}</span></td>
+                       <td>₱${originalCost.toFixed(2)}</td>
+                       <td>${unitProfit >= 0 ? '<span class="text-success">' : '<span class="text-danger">'}₱${unitProfit.toFixed(2)}</span></td>
                        <td>
                            <span class="quantity-badge ${quantityClass}">
                                ${product.quantity} ${product.quantity === 1 ? 'unit' : 'units'}
@@ -897,6 +921,7 @@
                     document.getElementById('modalTitle').textContent = 'Edit Product';
                     document.getElementById('productName').value = product.name;
                     document.getElementById('productPrice').value = product.price;
+                    document.getElementById('productOriginalCost').value = (product.original_cost !== undefined && product.original_cost !== null) ? Number(product.original_cost) : '';
                     document.getElementById('productQuantity').value = product.quantity;
                     document.getElementById('productPerishable').value = product.perishable;
                     document.getElementById('productExpirationDate').value = product.expiration_date || '';
@@ -937,6 +962,9 @@
                 const productData = {
                     name: document.getElementById('productName').value.trim(),
                     price: parseFloat(document.getElementById('productPrice').value),
+                    ...(document.getElementById('productOriginalCost').value !== '' && {
+                        original_price: parseFloat(document.getElementById('productOriginalCost').value)
+                    }),
                     quantity: parseInt(document.getElementById('productQuantity').value),
                     perishable: document.getElementById('productPerishable').value,
                     expiration_date: document.getElementById('productExpirationDate').value || null
@@ -960,7 +988,7 @@
 
                 if (product) {
                     document.getElementById('deleteProductInfo').textContent =
-                        `${product.name} - $${parseFloat(product.price).toFixed(2)} (Qty: ${product.quantity})`;
+                        `${product.name} - ₱${parseFloat(product.price).toFixed(2)} (Qty: ${product.quantity})`;
                     $('#deleteModal').modal('show');
                 }
             }

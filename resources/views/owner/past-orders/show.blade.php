@@ -84,7 +84,7 @@
                                                     <h6 class="mb-0">Total Amount:</h6>
                                                 </div>
                                                 <div class="col-sm-9 text-secondary">
-                                                    ${{ number_format($pastOrder->total_amount, 2) }}
+                                                    ₱{{ number_format($pastOrder->total_amount, 2) }}
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
@@ -121,7 +121,7 @@
                                                                 <tr>
                                                                     <td>{{ $item->product->name ?? 'N/A' }}</td>
                                                                     <td>{{ $item->quantity }}</td>
-                                                                    <td>${{ number_format($item->price, 2) }}</td>
+                                                                    <td>₱{{ number_format($item->price, 2) }}</td>
                                                                 </tr>
                                                                 @endforeach
                                                             </tbody>

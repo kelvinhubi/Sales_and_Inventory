@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Brand;
 use App\Models\Branch;
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\RejectedGood;
 use Illuminate\Http\Request;
@@ -13,28 +13,29 @@ class RejectedGoodsController extends Controller
 {
     public function index()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('Login');
         }
         $rejectedGoods = RejectedGood::with(['brand', 'branch', 'items.product'])->paginate(10);
+
         return view('owner.rejected-goods.index', compact('rejectedGoods'));
     }
 
     public function create()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('Login');
         }
         $brands = Brand::all();
         $branches = Branch::all();
         $products = Product::select('id', 'name', 'price')->get();
-        
+
         // Get available DR numbers from past orders
         $drNumbers = \App\Models\PastOrder::whereNotNull('dr_number')
                      ->orderBy('created_at', 'desc')
                      ->pluck('dr_number', 'dr_number')
                      ->toArray();
-                     
+
         return view('owner.rejected-goods.create', compact('brands', 'branches', 'products', 'drNumbers'));
     }
 
@@ -62,22 +63,24 @@ class RejectedGoodsController extends Controller
 
     public function show(RejectedGood $rejectedGood)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('Login');
         }
         $this->authorize('view', $rejectedGood);
         $rejectedGood->load(['brand', 'branch', 'items.product']);
+
         return view('owner.rejected-goods.show', compact('rejectedGood'));
     }
 
     public function edit(RejectedGood $rejectedGood)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('Login');
         }
         $this->authorize('update', $rejectedGood);
         $brands = Brand::all();
         $branches = Branch::all();
+
         return view('owner.rejected-goods.edit', compact('rejectedGood', 'brands', 'branches'));
     }
 
@@ -110,6 +113,7 @@ class RejectedGoodsController extends Controller
     {
         $this->authorize('delete', $rejectedGood);
         $rejectedGood->delete();
+
         return redirect()->route('owner.rejected-goods.index')->with('success', 'Rejected good deleted successfully.');
     }
 
@@ -118,11 +122,11 @@ class RejectedGoodsController extends Controller
         $pastOrder = \App\Models\PastOrder::where('dr_number', $drNumber)
                      ->with(['brand', 'branch'])
                      ->first();
-        
-        if (!$pastOrder) {
+
+        if (! $pastOrder) {
             return response()->json(['error' => 'DR number not found'], 404);
         }
-        
+
         return response()->json([
             'brand_id' => $pastOrder->brand_id,
             'brand_name' => $pastOrder->brand->name,

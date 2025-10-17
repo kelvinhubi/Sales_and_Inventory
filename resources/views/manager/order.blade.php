@@ -133,6 +133,74 @@
                 font-size: 1.2rem;
                 font-weight: bold;
             }
+
+            /* Dashboard Summary Styles */
+            .dashboard-brand-section {
+                margin-bottom: 15px;
+                border-left: 3px solid #28a745;
+                padding-left: 10px;
+            }
+
+            .dashboard-brand-title {
+                font-size: 1rem;
+                font-weight: bold;
+                color: #28a745;
+                margin-bottom: 8px;
+            }
+
+            .dashboard-branch-item {
+                background: #f8f9fa;
+                padding: 8px 10px;
+                margin-bottom: 5px;
+                border-radius: 4px;
+                font-size: 0.85rem;
+            }
+
+            .dashboard-branch-name {
+                font-weight: 600;
+                color: #495057;
+            }
+
+            .dashboard-branch-total {
+                color: #28a745;
+                font-weight: bold;
+                float: right;
+            }
+
+            .dashboard-grand-total {
+                background: #28a745;
+                color: white;
+                padding: 12px;
+                text-align: center;
+                font-size: 1.1rem;
+                font-weight: bold;
+                border-radius: 6px;
+                margin-top: 15px;
+            }
+
+            .summary-item-count {
+                font-size: 0.75rem;
+                color: #6c757d;
+                display: block;
+                margin-top: 2px;
+            }
+
+            #dashboardSummaryContent::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            #dashboardSummaryContent::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+
+            #dashboardSummaryContent::-webkit-scrollbar-thumb {
+                background: #28a745;
+                border-radius: 3px;
+            }
+
+            #dashboardSummaryContent::-webkit-scrollbar-thumb:hover {
+                background: #218838;
+            }
         </style>
     </head>
 
@@ -222,40 +290,76 @@
                             </div>
                         </div>
 
-                        <div class="search-section">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="fas fa-search"></i>
-                                            </span>
+                        <div class="row">
+                            <!-- Left Column: Orders List -->
+                            <div class="col-lg-8">
+                                <div class="search-section">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">
+                                                        <i class="fas fa-search"></i>
+                                                    </span>
+                                                </div>
+                                                <input type="text" class="form-control" id="searchInput"
+                                                    placeholder="Search orders...">
+                                            </div>
                                         </div>
-                                        <input type="text" class="form-control" id="searchInput"
-                                            placeholder="Search orders...">
+                                        <div class="col-md-3">
+                                            <select class="form-control" id="brandFilter">
+                                                <option value="">All Brands</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <select class="form-control" id="branchFilter">
+                                                <option value="">All Branches</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <select class="form-control" id="sortSelect">
+                                                <option value="date">By Date</option>
+                                                <option value="total">By Total</option>
+                                                <option value="brand">By Brand</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
-                                    <select class="form-control" id="brandFilter">
-                                        <option value="">All Brands</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <select class="form-control" id="branchFilter">
-                                        <option value="">All Branches</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <select class="form-control" id="sortSelect">
-                                        <option value="date">Sort by Date</option>
-                                        <option value="total">Sort by Total</option>
-                                        <option value="brand">Sort by Brand</option>
-                                    </select>
+
+                                <div class="orders-grid" id="ordersContainer">
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="orders-grid" id="ordersContainer">
+                            <!-- Right Column: Order Summary Dashboard -->
+                            <div class="col-lg-4">
+                                <div class="card card-success sticky-top" style="top: 20px;">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-file-invoice mr-2"></i>
+                                            Final Order Summary
+                                        </h3>
+                                        <div class="card-tools">
+                                            <button type="button" class="btn btn-tool" id="refreshSummaryBtn">
+                                                <i class="fas fa-sync-alt"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body" id="dashboardSummaryContent" style="max-height: 600px; overflow-y: auto;">
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-shopping-cart" style="font-size: 3rem; color: #d1d5db;"></i>
+                                            <p class="text-muted mt-3">Loading summary...</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button type="button" class="btn btn-success btn-block" id="processOrderBtn">
+                                            <i class="fas fa-check-circle mr-2"></i>Order to Process
+                                        </button>
+                                        <button type="button" class="btn btn-info btn-block btn-sm mt-2" id="viewFullSummaryBtn">
+                                            <i class="fas fa-expand mr-2"></i>View Full Summary
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -293,10 +397,18 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Order Items</label>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="mb-0">
+                                        <input type="checkbox" id="selectAllItems" style="width: 16px; height: 16px; margin-right: 8px;">
+                                        Order Items (Select All)
+                                    </label>
+                                </div>
                                 <div id="orderItemsContainer">
                                     <div class="order-item-row">
-                                        <div class="row mb-2">
+                                        <div class="row mb-2 align-items-center">
+                                            <div class="col-md-auto px-2">
+                                                <input type="checkbox" class="item-checkbox" style="width: 18px; height: 18px;">
+                                            </div>
                                             <div class="col-md-4">
                                                 <select class="form-control item-product" required>
                                                     <option value="">Select Product</option>
@@ -306,7 +418,7 @@
                                                 <input type="number" class="form-control item-quantity"
                                                     placeholder="Qty" min="1" required>
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-2">
                                                 <input type="number" class="form-control item-price" placeholder="Price"
                                                     step="0.01" min="0" readonly>
                                             </div>
@@ -322,9 +434,14 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button type="button" class="btn btn-success btn-sm" id="addItemBtn">
-                                    <i class="fas fa-plus mr-1"></i>Add Product
-                                </button>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <button type="button" class="btn btn-success btn-sm" id="addItemBtn">
+                                        <i class="fas fa-plus mr-1"></i>Add Product
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" id="massDeleteBtn" style="display: none;">
+                                        <i class="fas fa-trash-alt mr-1"></i>Delete Selected Items
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -553,6 +670,7 @@
 
                     populateFilters();
                     renderOrders();
+                    await loadDashboardSummary(); // Load dashboard summary automatically
                     showNotification('Data loaded successfully!');
                 } catch (error) {
                     console.error('Failed to load initial data:', error);
@@ -571,11 +689,21 @@
                 $('#orderForm').submit(handleOrderSubmit);
                 $('#generatePdfBtn').click(generatePDF);
 
+                // Dashboard buttons
+                $('#processOrderBtn').click(handleProcessOrder);
+                $('#refreshSummaryBtn').click(loadDashboardSummary);
+                $('#viewFullSummaryBtn').click(showFinalOrderSummary);
+
                 // Dynamic item management
                 $('#addItemBtn').click(addOrderItem);
                 $(document).on('click', '.remove-item', removeOrderItem);
                 $(document).on('input', '.item-quantity', calculateOrderTotal);
                 $(document).on('change', '.item-product', handleProductSelection);
+
+                // Mass delete functionality
+                $('#massDeleteBtn').click(handleMassDelete);
+                $(document).on('change', '.item-checkbox', toggleMassDeleteButton);
+                $('#selectAllItems').change(handleSelectAll);
 
                 // Brand/Branch cascading
                 $('#orderBrand').change(handleBrandChange);
@@ -619,7 +747,6 @@
                 
                 // Clear existing items when brand changes
                 $('#orderItemsContainer').empty();
-                addOrderItem(); // Add one empty row by default
 
                 if (brandId) {
                     try {
@@ -636,11 +763,17 @@
                         // Add standard items if they exist
                         if (brandData.standard_items && brandData.standard_items.length > 0) {
                             await addStandardItems(brandData.standard_items);
+                        } else {
+                            // Only add empty row if no standard items
+                            addOrderItem();
                         }
                     } catch (error) {
                         console.error('Failed to load brand data:', error);
                         showNotification('Failed to load brand data', 'error');
                     }
+                } else {
+                    // Add empty row if no brand selected
+                    addOrderItem();
                 }
             }
 
@@ -660,37 +793,19 @@
                     if (product) {
                         priceInput.val(product.price);
                         
-                        // Show stock information
-                        const stockInfo = product.quantity > 0 ?
-                            `<small class="text-muted stock-info d-block mt-1">
-                                <i class="fas fa-box mr-1"></i>Available: ${product.quantity} units
-                            </small>` :
-                            `<small class="text-danger stock-info d-block mt-1">
-                                <i class="fas fa-exclamation-triangle mr-1"></i>OUT OF STOCK
-                            </small>`;
-                        
-                        // Insert stock info after quantity input
-                        quantityInput.after(stockInfo);
-                        
-                        // Set max quantity based on stock
+                        // Set max quantity based on stock (but don't show it)
                         if (product.quantity > 0) {
                             quantityInput.attr('max', product.quantity);
-                            quantityInput.attr('placeholder', `Max: ${product.quantity}`);
-                            
-                            // Add warning if stock is low
-                            if (product.quantity <= 5) {
-                                quantityInput.addClass('border-warning');
-                                quantityInput.after(`<small class="text-warning low-stock-warning">Low stock warning!</small>`);
-                            } else {
-                                quantityInput.removeClass('border-warning');
-                                itemRow.find('.low-stock-warning').remove();
-                            }
+                            quantityInput.attr('placeholder', 'Qty');
+                            quantityInput.removeAttr('disabled');
+                            quantityInput.removeClass('bg-light border-warning');
                         } else {
                             // Disable quantity input if out of stock
                             quantityInput.attr('disabled', true);
                             quantityInput.attr('max', 0);
                             quantityInput.val('');
                             quantityInput.addClass('bg-light');
+                            quantityInput.attr('placeholder', 'Out of Stock');
                         }
                         
                         calculateItemSubtotal(itemRow);
@@ -882,7 +997,10 @@
                 // Reset to single item row
                 $('#orderItemsContainer').html(`
                 <div class="order-item-row">
-                    <div class="row mb-2">
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-md-auto px-2">
+                            <input type="checkbox" class="item-checkbox" style="width: 18px; height: 18px;">
+                        </div>
                         <div class="col-md-4">
                             <select class="form-control item-product" required>
                                 <option value="">Select Product</option>
@@ -891,7 +1009,7 @@
                         <div class="col-md-2">
                             <input type="number" class="form-control item-quantity" placeholder="Qty" min="1" required>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <input type="number" class="form-control item-price" placeholder="Price" step="0.01" min="0" readonly>
                         </div>
                         <div class="col-md-2">
@@ -915,7 +1033,10 @@
             function addOrderItem() {
                 const newItem = $(`
                 <div class="order-item-row">
-                    <div class="row mb-2">
+                    <div class="row mb-2 align-items-center">
+                        <div class="col-md-auto px-2">
+                            <input type="checkbox" class="item-checkbox" style="width: 18px; height: 18px;">
+                        </div>
                         <div class="col-md-4">
                             <select class="form-control item-product" required>
                                 <option value="">Select Product</option>
@@ -924,7 +1045,7 @@
                         <div class="col-md-2">
                             <input type="number" class="form-control item-quantity" placeholder="Qty" min="1" required>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <input type="number" class="form-control item-price" placeholder="Price" step="0.01" min="0" readonly>
                         </div>
                         <div class="col-md-2">
@@ -941,13 +1062,10 @@
  
             $('#orderItemsContainer').append(newItem);
  
-            // Populate products in the new row with stock info
+            // Populate products in the new row
             const productSelect = newItem.find('.item-product');
             products.forEach(product => {
-                const stockInfo = product.quantity > 0 ? ` (Stock: ${product.quantity})` : ' (OUT OF STOCK)';
-                const optionText = product.quantity === 0 ?
-                    `${product.name} - ₱${parseFloat(product.price).toLocaleString('en-US', {minimumFractionDigits: 2})}${stockInfo}` :
-                    `${product.name} - ₱${parseFloat(product.price).toLocaleString('en-US', {minimumFractionDigits: 2})}${stockInfo}`;
+                const optionText = `${product.name} - ₱${parseFloat(product.price).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 productSelect.append(
                     `<option value="${product.id}" data-stock="${product.quantity}" data-price="${product.price}">${optionText}</option>`
                 );
@@ -969,10 +1087,7 @@
                     select.find('option:not(:first)').remove();
      
                     products.forEach(product => {
-                        const stockInfo = product.quantity > 0 ? ` (Stock: ${product.quantity})` : ' (OUT OF STOCK)';
-                        const optionText = product.quantity === 0 ?
-                            `${product.name} - ₱${parseFloat(product.price).toLocaleString('en-US', {minimumFractionDigits: 2})}${stockInfo}` :
-                            `${product.name} - ₱${parseFloat(product.price).toLocaleString('en-US', {minimumFractionDigits: 2})}${stockInfo}`;
+                        const optionText = `${product.name} - ₱${parseFloat(product.price).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                         select.append(
                             `<option value="${product.id}" data-stock="${product.quantity}" data-price="${product.price}">${optionText}</option>`
                         );
@@ -987,6 +1102,55 @@
                 } else {
                     $('.remove-item').hide();
                 }
+            }
+
+            // Mass delete functionality
+            function toggleMassDeleteButton() {
+                const checkedItems = $('.item-checkbox:checked').length;
+                if (checkedItems > 0) {
+                    $('#massDeleteBtn').show();
+                } else {
+                    $('#massDeleteBtn').hide();
+                }
+            }
+
+            function handleMassDelete() {
+                const checkedItems = $('.item-checkbox:checked');
+                const totalItems = $('.order-item-row').length;
+                
+                if (checkedItems.length === 0) {
+                    showNotification('Please select items to delete', 'error');
+                    return;
+                }
+
+                // Prevent deleting all items if it would leave the form empty
+                if (checkedItems.length >= totalItems) {
+                    if (!confirm('This will delete all items. Are you sure?')) {
+                        return;
+                    }
+                }
+
+                // Remove checked items
+                checkedItems.closest('.order-item-row').remove();
+                
+                // Ensure at least one item row exists
+                if ($('.order-item-row').length === 0) {
+                    addOrderItem();
+                }
+                
+                // Update UI
+                updateRemoveButtons();
+                toggleMassDeleteButton();
+                calculateOrderTotal();
+                $('#selectAllItems').prop('checked', false);
+                
+                showNotification(`${checkedItems.length} item(s) deleted successfully`, 'success');
+            }
+
+            function handleSelectAll() {
+                const isChecked = $('#selectAllItems').is(':checked');
+                $('.item-checkbox').prop('checked', isChecked);
+                toggleMassDeleteButton();
             }
 
             async function addStandardItems(standardItems) {
@@ -1126,6 +1290,7 @@
 
                     await fetchOrders();
                     renderOrders();
+                    await loadDashboardSummary(); // Refresh dashboard
                     $('#orderFormModal').modal('hide');
 
                 } catch (error) {
@@ -1151,6 +1316,7 @@
 
                         await fetchOrders();
                         renderOrders();
+                        await loadDashboardSummary(); // Refresh dashboard
 
                     } catch (error) {
                         console.error('Failed to delete order:', error);
@@ -1171,6 +1337,97 @@
                     renderOrders();
                 } catch (error) {
                     console.error('Search failed:', error);
+                }
+            }
+
+            // Dashboard Summary Functions
+            async function loadDashboardSummary() {
+                try {
+                    const summary = await getFinalOrderSummary();
+                    finalOrderSummary = summary;
+                    renderDashboardSummary(summary);
+                } catch (error) {
+                    console.error('Failed to load dashboard summary:', error);
+                    $('#dashboardSummaryContent').html(`
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-circle text-danger" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">Failed to load summary</p>
+                            <button class="btn btn-sm btn-primary" onclick="loadDashboardSummary()">
+                                <i class="fas fa-sync-alt mr-1"></i>Retry
+                            </button>
+                        </div>
+                    `);
+                }
+            }
+
+            function renderDashboardSummary(summary) {
+                const content = $('#dashboardSummaryContent');
+                content.empty();
+
+                // Check if there are no orders
+                if (!summary.brands || summary.brands.length === 0) {
+                    content.html(`
+                        <div class="text-center py-4">
+                            <i class="fas fa-shopping-cart" style="font-size: 2.5rem; color: #d1d5db;"></i>
+                            <p class="text-muted mt-3 mb-0">No orders yet</p>
+                            <small class="text-muted">Create orders to see summary</small>
+                        </div>
+                    `);
+                    $('#processOrderBtn').prop('disabled', true);
+                    return;
+                }
+
+                let grandTotal = 0;
+
+                // Render each brand
+                summary.brands.forEach(brand => {
+                    const brandSection = $(`<div class="dashboard-brand-section"></div>`);
+                    brandSection.append(`<div class="dashboard-brand-title"><i class="fas fa-store mr-1"></i>${brand.name}</div>`);
+
+                    brand.branches.forEach(branch => {
+                        const branchTotal = branch.orders.reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
+                        grandTotal += branchTotal;
+
+                        const totalItems = branch.orders.reduce((sum, order) => sum + order.items.length, 0);
+
+                        const branchItem = $(`
+                            <div class="dashboard-branch-item">
+                                <div class="dashboard-branch-name">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>${branch.name}
+                                </div>
+                                <div class="dashboard-branch-total">
+                                    ₱${branchTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                                </div>
+                                <span class="summary-item-count">${totalItems} items</span>
+                            </div>
+                        `);
+
+                        brandSection.append(branchItem);
+                    });
+
+                    content.append(brandSection);
+                });
+
+                // Add grand total
+                content.append(`
+                    <div class="dashboard-grand-total">
+                        <i class="fas fa-calculator mr-2"></i>
+                        GRAND TOTAL<br>
+                        ₱${grandTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                    </div>
+                `);
+
+                $('#processOrderBtn').prop('disabled', false);
+            }
+
+            async function handleProcessOrder() {
+                if (!finalOrderSummary || !finalOrderSummary.brands || finalOrderSummary.brands.length === 0) {
+                    showNotification('No orders to process', 'error');
+                    return;
+                }
+
+                if (confirm('Are you sure you want to process these orders? This will generate a PDF and update inventory.')) {
+                    generatePDF();
                 }
             }
 
@@ -1301,7 +1558,7 @@
                     name: "Inventory Management System",
                     address: "123 Business Street, Metro City",
                     phone: "(123) 456-7890",
-                    email: "manager@example.com"
+                    email: "Owner@example.com"
                 };
 
                 // Add Header
@@ -1532,7 +1789,7 @@
                         order_id: finalOrderSummary
                     }));
 
-                    const response = await fetch('{{ route('manager.orders.deduct-inventory') }}', {
+                    const response = await fetch('{{ route('owner.orders.deduct-inventory') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

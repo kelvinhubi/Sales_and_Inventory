@@ -3,16 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\View\View;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class signup extends Controller
 {
-    public function showForm():View{
+    public function showForm(): View
+    {
         return View('signup');
     }
-    public function createUser(Request $request):RedirectResponse|View{
+    public function createUser(Request $request): RedirectResponse|View
+    {
         $info = $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users',
@@ -22,6 +24,7 @@ class signup extends Controller
         $info['password'] = bcrypt($info['password']);
         $info['Role'] = 'Customer';
         User::create($info);
-        return redirect()->route('Login')->with('status','Registration Complete, You can now log in');
+
+        return redirect()->route('Login')->with('status', 'Registration Complete, You can now log in');
     }
 }

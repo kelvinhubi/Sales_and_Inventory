@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use view;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Validator;
 
 class ManagerController extends Controller
 {
     public function showView()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('Login');
         }
+
         return view('owner.manager');
     }
 
@@ -33,6 +32,7 @@ class ManagerController extends Controller
         }
 
         $users = $query->latest()->paginate(10);
+
         return response()->json($users);
     }
 
@@ -41,8 +41,8 @@ class ManagerController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:20',
-            'notes' => 'nullable|string',
+            'phone' => ['required', 'regex:/^(09|\+639)\d{9}$|^(0[2-8]|\+63[2-8])\d{7,8}$/'],
+            'notes' => 'required|nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -69,7 +69,7 @@ class ManagerController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $manager->id,
             'password' => 'nullable|string|min:8',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['required', 'regex:/^(09|\+639)\d{9}$|^(0[2-8]|\+63[2-8])\d{7,8}$/'],
             'notes' => 'nullable|string',
         ]);
 
@@ -90,6 +90,7 @@ class ManagerController extends Controller
     public function destroy(User $manager)
     {
         $manager->delete();
+
         return response()->json(null, 200);
     }
 }

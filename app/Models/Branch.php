@@ -5,8 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class Branch extends Model
 {
+    use HasFactory;
     use HasFactory;
 
     // Relationship for past orders
@@ -14,14 +16,13 @@ class Branch extends Model
     {
         return $this->hasMany(\App\Models\PastOrder::class);
     }
-    use HasFactory;
-     protected $fillable = [
-        'brand_id',
-        'name',
-        'address',
-        'contact_person',
-        'contact_number',
-        'status'
+    protected $fillable = [
+       'brand_id',
+       'name',
+       'address',
+       'contact_person',
+       'contact_number',
+       'status',
     ];
 
     protected $appends = ['last_order_date'];
@@ -35,7 +36,7 @@ class Branch extends Model
     {
         return $this->hasMany(Order::class);
     }
-      /**
+    /**
      * Get the brand that owns this branch
      */
     public function brand(): BelongsTo

@@ -3,14 +3,14 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class DiscrepancyReportExport implements FromArray, WithHeadings, WithStyles, WithColumnWidths, WithTitle
 {
@@ -38,7 +38,7 @@ class DiscrepancyReportExport implements FromArray, WithHeadings, WithStyles, Wi
                 number_format($item['amount'], 2),
                 number_format($item['less'], 2),
                 number_format($item['net_amount'], 2),
-                $item['remarks']
+                $item['remarks'],
             ];
         })->toArray();
     }
@@ -47,7 +47,7 @@ class DiscrepancyReportExport implements FromArray, WithHeadings, WithStyles, Wi
     {
         return [
             'DATE',
-            'STORE', 
+            'STORE',
             'DR#',
             'PRODUCT',
             'QTY SOLD',
@@ -55,7 +55,7 @@ class DiscrepancyReportExport implements FromArray, WithHeadings, WithStyles, Wi
             'AMOUNT',
             'LESS',
             'NET',
-            'REMARKS'
+            'REMARKS',
         ];
     }
 
@@ -65,22 +65,22 @@ class DiscrepancyReportExport implements FromArray, WithHeadings, WithStyles, Wi
         $sheet->getStyle('A1:J1')->applyFromArray([
             'font' => [
                 'bold' => true,
-                'color' => ['rgb' => 'FFFFFF']
+                'color' => ['rgb' => 'FFFFFF'],
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'color' => ['rgb' => 'DC3545'] // Red color like your example
+                'color' => ['rgb' => 'DC3545'], // Red color like your example
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER
+                'vertical' => Alignment::VERTICAL_CENTER,
             ],
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['rgb' => '000000']
-                ]
-            ]
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
         ]);
 
         // Data rows styling
@@ -90,13 +90,13 @@ class DiscrepancyReportExport implements FromArray, WithHeadings, WithStyles, Wi
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
-                        'color' => ['rgb' => 'CCCCCC']
-                    ]
+                        'color' => ['rgb' => 'CCCCCC'],
+                    ],
                 ],
                 'alignment' => [
                     'vertical' => Alignment::VERTICAL_TOP,
-                    'wrapText' => true
-                ]
+                    'wrapText' => true,
+                ],
             ]);
 
             // Center align date, DR#, quantity columns
@@ -116,8 +116,8 @@ class DiscrepancyReportExport implements FromArray, WithHeadings, WithStyles, Wi
                     $sheet->getStyle("I{$row}")->applyFromArray([
                         'font' => [
                             'color' => ['rgb' => 'DC3545'],
-                            'bold' => true
-                        ]
+                            'bold' => true,
+                        ],
                     ]);
                 }
             }
@@ -125,7 +125,7 @@ class DiscrepancyReportExport implements FromArray, WithHeadings, WithStyles, Wi
 
         // Add title
         $sheet->insertNewRowBefore(1, 2);
-        
+
         $title = 'Sales vs Rejected Goods Discrepancy Report (Per Item)';
         if ($this->startDate || $this->endDate) {
             $period = '';
@@ -138,14 +138,14 @@ class DiscrepancyReportExport implements FromArray, WithHeadings, WithStyles, Wi
             }
             $title .= $period;
         }
-        
+
         $sheet->setCellValue('A1', $title);
-        
+
         $sheet->getStyle('A1')->applyFromArray([
             'font' => ['bold' => true, 'size' => 14],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
         ]);
-        
+
         $sheet->mergeCells('A1:J1');
 
         // Auto-fit row heights

@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Manager;
 
+use App\Exports\PastOrdersSummaryReport;
 use App\Http\Controllers\Controller;
 use App\Models\PastOrder;
-use App\Models\Branch;
-use App\Models\Product;
-use App\Exports\PastOrdersSummaryReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -15,7 +13,7 @@ class PastOrdersSummaryController extends Controller
 {
     public function exportSummaryReport(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
 
@@ -26,20 +24,20 @@ class PastOrdersSummaryController extends Controller
                 'end_date' => 'nullable|date|before_or_equal:today',
                 'search' => 'nullable|string',
                 'branch_search' => 'nullable|string',
-                'brand_search' => 'nullable|string'
+                'brand_search' => 'nullable|string',
             ];
-            
+
             // Only validate end_date against start_date if start_date is provided
             if ($request->filled('start_date')) {
                 $validation['end_date'] .= '|after_or_equal:start_date';
             }
-            
+
             $request->validate($validation);
 
             // Get selected order IDs
             $selectedIds = explode(',', $request->selected_orders);
             $selectedIds = array_filter($selectedIds); // Remove empty values
-            
+
             if (empty($selectedIds)) {
                 return redirect()->back()->with('error', 'No orders selected for summary report.');
             }
@@ -65,19 +63,19 @@ class PastOrdersSummaryController extends Controller
                       });
                 });
             }
-            
+
             if ($startDate) {
                 $query->whereDate('created_at', '>=', $startDate);
             }
-            
+
             if ($endDate) {
                 $query->whereDate('created_at', '<=', $endDate);
             }
-            
+
             if ($branchSearch) {
                 $query->where('branch_id', $branchSearch);
             }
-            
+
             if ($brandSearch) {
                 $query->where('brand_id', $brandSearch);
             }
@@ -95,7 +93,7 @@ class PastOrdersSummaryController extends Controller
                 'branch_search' => $branchSearch,
                 'brand_search' => $brandSearch,
                 'selected_count' => count($selectedIds),
-                'filtered_count' => $pastOrders->count()
+                'filtered_count' => $pastOrders->count(),
             ];
 
             // Generate filename with current date
@@ -108,16 +106,16 @@ class PastOrdersSummaryController extends Controller
 
             // Export Excel file
             $export = new PastOrdersSummaryReport($pastOrders, $filterCriteria);
-            
+
             $response = Excel::download($export, $filename);
-            
+
             // Add headers to prevent caching issues
             $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
             $response->headers->set('Pragma', 'no-cache');
             $response->headers->set('Expires', '0');
-            
+
             return $response;
-            
+
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error generating summary report: ' . $e->getMessage());
         }

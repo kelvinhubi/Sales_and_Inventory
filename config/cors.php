@@ -17,18 +17,26 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => ['*'],
+    // SECURITY: Replace with your actual domain(s) in production
+    'allowed_origins' => [
+        env('APP_URL', 'http://localhost'),
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+        // Add your production domains here:
+        // 'https://yourdomain.com',
+        // 'https://www.yourdomain.com',
+    ],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['Content-Type', 'X-Requested-With', 'Authorization', 'X-CSRF-TOKEN', 'Accept'],
 
     'exposed_headers' => [],
 
-    'max_age' => 0,
+    'max_age' => 3600,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];

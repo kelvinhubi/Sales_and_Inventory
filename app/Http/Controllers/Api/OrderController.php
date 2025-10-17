@@ -2,29 +2,30 @@
 
 namespace App\Http\Controllers\Api;
 
-use Exception;
+use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use App\Models\Brand;
 use App\Models\Order;
-use App\Models\Branch;
-use App\Models\Product;
 use App\Models\OrderItem;
 use App\Models\PastOrder;
-use Illuminate\View\View;
-use Illuminate\Http\Request;
 use App\Models\PastOrderItem;
+use App\Models\Product;
+use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 
 class OrderController extends Controller
 {
-    public function showView():View{
-        if (!Auth::check()) {
+    public function showView(): View
+    {
+        if (! Auth::check()) {
             return redirect()->route('Login');
         }
+
         return view('owner.order');
     }
     /**
@@ -33,10 +34,11 @@ class OrderController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Order::with(['brand', 'branch', 'items']);
+            $query = Order::with(['brand', 'branch', 'items'])
+                ->where('user_id', Auth::id()); // Filter by authenticated user
 
             // Search functionality
-            if ($request->has('search') && !empty($request->search)) {
+            if ($request->has('search') && ! empty($request->search)) {
                 $searchTerm = $request->search;
                 $query->where(function ($q) use ($searchTerm) {
                     $q->whereHas('brand', function ($brandQuery) use ($searchTerm) {
@@ -50,12 +52,12 @@ class OrderController extends Controller
             }
 
             // Brand filter
-            if ($request->has('brand_id') && !empty($request->brand_id)) {
+            if ($request->has('brand_id') && ! empty($request->brand_id)) {
                 $query->where('brand_id', $request->brand_id);
             }
 
             // Branch filter
-            if ($request->has('branch_id') && !empty($request->branch_id)) {
+            if ($request->has('branch_id') && ! empty($request->branch_id)) {
                 $query->where('branch_id', $request->branch_id);
             }
 
@@ -64,15 +66,18 @@ class OrderController extends Controller
             switch ($sortBy) {
                 case 'total':
                     $query->orderBy('total_amount', 'desc');
+
                     break;
                 case 'brand':
                     $query->join('brands', 'orders.brand_id', '=', 'brands.id')
                           ->orderBy('brands.name', 'asc')
                           ->select('orders.*');
+
                     break;
                 case 'date':
                 default:
                     $query->orderBy('created_at', 'desc');
+
                     break;
             }
 
@@ -95,22 +100,22 @@ class OrderController extends Controller
                             'name' => $item->name, // Use 'name' field
                             'quantity' => $item->quantity,
                             'price' => number_format($item->price, 2, '.', ''), // Use 'price' field
-                            'product_id' => $item->product_id
+                            'product_id' => $item->product_id,
                         ];
-                    })
+                    }),
                 ];
             });
 
             return response()->json([
                 'success' => true,
                 'data' => $transformedOrders,
-                'message' => 'Orders retrieved successfully'
+                'message' => 'Orders retrieved successfully',
             ]);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve orders: ' . $e->getMessage()
+                'message' => 'Failed to retrieve orders: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -120,7 +125,7 @@ class OrderController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $validatedData = $request->validate([
             'brand_id' => 'required|exists:brands,id',
             'branch_id' => 'required|exists:branches,id',
             'items' => 'required|array|min:1',
@@ -129,36 +134,29 @@ class OrderController extends Controller
             'items.*.price' => 'required|numeric|min:0',
             'items.*.product_id' => 'required|exists:products,id',
             'total_amount' => 'required|numeric|min:0',
-            'notes' => 'nullable|string|max:1000'
+            'notes' => 'nullable|string|max:1000',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         DB::beginTransaction();
-        
+
         try {
             // Create the order
             $order = Order::create([
-                'brand_id' => $request->brand_id,
-                'branch_id' => $request->branch_id,
-                'total_amount' => $request->total_amount,
-                'notes' => $request->notes
+                'user_id' => Auth::id(), // Save authenticated user's ID
+                'brand_id' => $validatedData['brand_id'],
+                'branch_id' => $validatedData['branch_id'],
+                'total_amount' => $validatedData['total_amount'],
+                'notes' => $validatedData['notes'] ?? null,
             ]);
 
             // Create order items - using correct field names
-            foreach ($request->items as $item) {
+            foreach ($validatedData['items'] as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item['product_id'],
                     'name' => $item['name'], // Use 'name' instead of 'product_name'
                     'quantity' => $item['quantity'],
-                    'price' => $item['price'] // Use 'price' instead of 'unit_price'
+                    'price' => $item['price'], // Use 'price' instead of 'unit_price'
                 ]);
             }
 
@@ -177,16 +175,17 @@ class OrderController extends Controller
                     'branch_name' => $order->branch->name,
                     'total_amount' => number_format($order->total_amount, 2, '.', ''),
                     'notes' => $order->notes,
-                    'created_at' => $order->created_at->toISOString()
+                    'created_at' => $order->created_at->toISOString(),
                 ],
-                'message' => 'Order created successfully'
+                'message' => 'Order created successfully',
             ], 201);
 
         } catch (Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create order: ' . $e->getMessage()
+                'message' => 'Failed to create order: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -197,7 +196,10 @@ class OrderController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $order = Order::with(['brand', 'branch', 'items'])->findOrFail($id);
+            $order = Order::with(['brand', 'branch', 'items'])
+                ->where('id', $id)
+                ->where('user_id', Auth::id()) // Ensure user owns this order
+                ->firstOrFail();
 
             return response()->json([
                 'success' => true,
@@ -216,16 +218,16 @@ class OrderController extends Controller
                             'name' => $item->name, // Use 'name' field
                             'quantity' => $item->quantity,
                             'price' => number_format($item->price, 2, '.', ''), // Use 'price' field
-                            'product_id' => $item->product_id
+                            'product_id' => $item->product_id,
                         ];
-                    })
-                ]
+                    }),
+                ],
             ]);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Order not found'
+                'message' => 'Order not found',
             ], 404);
         }
     }
@@ -235,7 +237,7 @@ class OrderController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $validatedData = $request->validate([
             'brand_id' => 'required|exists:brands,id',
             'branch_id' => 'required|exists:branches,id',
             'items' => 'required|array|min:1',
@@ -244,41 +246,35 @@ class OrderController extends Controller
             'items.*.price' => 'required|numeric|min:0',
             'items.*.product_id' => 'required|exists:products,id',
             'total_amount' => 'required|numeric|min:0',
-            'notes' => 'nullable|string|max:1000'
+            'notes' => 'nullable|string|max:1000',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         DB::beginTransaction();
-        
+
         try {
-            $order = Order::findOrFail($id);
+            $order = Order::where('id', $id)
+                ->where('user_id', Auth::id()) // Ensure user owns this order
+                ->firstOrFail();
 
             // Update order details
             $order->update([
-                'brand_id' => $request->brand_id,
-                'branch_id' => $request->branch_id,
-                'total_amount' => $request->total_amount,
-                'notes' => $request->notes
+                'brand_id' => $validatedData['brand_id'],
+                'branch_id' => $validatedData['branch_id'],
+                'total_amount' => $validatedData['total_amount'],
+                'notes' => $validatedData['notes'] ?? null,
             ]);
 
             // Delete existing order items
             $order->items()->delete();
 
             // Create new order items - using correct field names
-            foreach ($request->items as $item) {
+            foreach ($validatedData['items'] as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item['product_id'],
                     'name' => $item['name'], // Use 'name' instead of 'product_name'
                     'quantity' => $item['quantity'],
-                    'price' => $item['price'] // Use 'price' instead of 'unit_price'
+                    'price' => $item['price'], // Use 'price' instead of 'unit_price'
                 ]);
             }
 
@@ -297,16 +293,17 @@ class OrderController extends Controller
                     'branch_name' => $order->branch->name,
                     'total_amount' => number_format($order->total_amount, 2, '.', ''),
                     'notes' => $order->notes,
-                    'created_at' => $order->created_at->toISOString()
+                    'created_at' => $order->created_at->toISOString(),
                 ],
-                'message' => 'Order updated successfully'
+                'message' => 'Order updated successfully',
             ]);
 
         } catch (Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update order: ' . $e->getMessage()
+                'message' => 'Failed to update order: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -317,13 +314,15 @@ class OrderController extends Controller
     public function destroy($id): JsonResponse
     {
         DB::beginTransaction();
-        
+
         try {
-            $order = Order::findOrFail($id);
-            
+            $order = Order::where('id', $id)
+                ->where('user_id', Auth::id()) // Ensure user owns this order
+                ->firstOrFail();
+
             // Delete order items first (due to foreign key constraints)
             $order->items()->delete();
-            
+
             // Delete the order
             $order->delete();
 
@@ -331,14 +330,15 @@ class OrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Order deleted successfully'
+                'message' => 'Order deleted successfully',
             ]);
 
         } catch (Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete order: ' . $e->getMessage()
+                'message' => 'Failed to delete order: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -349,22 +349,24 @@ class OrderController extends Controller
     public function finalSummary(): JsonResponse
     {
         try {
-            // Check if any orders exist
-            $orderCount = Order::count();
-            
+            // Check if any orders exist for the authenticated user
+            $orderCount = Order::where('user_id', Auth::id())->count();
+
             if ($orderCount === 0) {
                 return response()->json([
                     'success' => true,
                     'data' => [
                         'brands' => [],
                         'total' => 0,
-                        'message' => 'No orders found'
-                    ]
+                        'message' => 'No orders found',
+                    ],
                 ]);
             }
 
-            // Get all orders with relationships
-            $orders = Order::with(['brand', 'branch', 'items'])->get();
+            // Get all orders with relationships for the authenticated user
+            $orders = Order::with(['brand', 'branch', 'items'])
+                ->where('user_id', Auth::id())
+                ->get();
 
             // Group orders by brand, then by branch
             $groupedData = [];
@@ -377,20 +379,20 @@ class OrderController extends Controller
                 $branchName = $order->branch->name ?? 'Unknown Branch';
 
                 // Initialize brand if not exists
-                if (!isset($groupedData[$brandId])) {
+                if (! isset($groupedData[$brandId])) {
                     $groupedData[$brandId] = [
                         'id' => $brandId,
                         'name' => $brandName,
-                        'branches' => []
+                        'branches' => [],
                     ];
                 }
 
                 // Initialize branch if not exists
-                if (!isset($groupedData[$brandId]['branches'][$branchId])) {
+                if (! isset($groupedData[$brandId]['branches'][$branchId])) {
                     $groupedData[$brandId]['branches'][$branchId] = [
                         'id' => $branchId,
                         'name' => $branchName,
-                        'orders' => []
+                        'orders' => [],
                     ];
                 }
 
@@ -406,9 +408,9 @@ class OrderController extends Controller
                             'name' => $item->name, // Use 'name' field
                             'quantity' => $item->quantity,
                             'price' => number_format($item->price, 2, '.', ''), // Use 'price' field
-                            'subtotal' => number_format($item->quantity * $item->price, 2, '.', '')
+                            'subtotal' => number_format($item->quantity * $item->price, 2, '.', ''),
                         ];
-                    })
+                    }),
                 ];
 
                 $groupedData[$brandId]['branches'][$branchId]['orders'][] = $orderData;
@@ -432,14 +434,14 @@ class OrderController extends Controller
                     'brands' => $finalData,
                     'total' => number_format($grandTotal, 2, '.', ''),
                     'order_count' => $orderCount,
-                    'generated_at' => now()->toISOString()
-                ]
+                    'generated_at' => now()->toISOString(),
+                ],
             ]);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate final summary: ' . $e->getMessage()
+                'message' => 'Failed to generate final summary: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -473,14 +475,14 @@ class OrderController extends Controller
                     'unique_branches' => $uniqueBranches,
                     'avg_order_value' => number_format($avgOrderValue, 2, '.', ''),
                     'recent_orders' => $recentOrders,
-                    'top_products' => $topProducts
-                ]
+                    'top_products' => $topProducts,
+                ],
             ]);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve statistics: ' . $e->getMessage()
+                'message' => 'Failed to retrieve statistics: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -490,12 +492,12 @@ class OrderController extends Controller
         try {
             // Manually get the JSON data
             $requestData = $request->json()->all();
-            
+
             // Check if the JSON has the expected structure
-            if (!isset($requestData['order_id']['brands'])) {
+            if (! isset($requestData['order_id']['brands'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid JSON structure. "brands" key not found.'
+                    'message' => 'Invalid JSON structure. "brands" key not found.',
                 ], 400);
             }
 
@@ -512,10 +514,10 @@ class OrderController extends Controller
 
                         // Find the order in the database
                         $order = Order::findOrFail($orderId);
-                        
+
                         // Generate DR number
                         $drNumber = $this->generateDRNumber();
-                        
+
                         // Transfer the order to the past_orders table
                         $pastOrder = PastOrder::create([
                             'brand_id' => $order->brand_id,
@@ -528,6 +530,7 @@ class OrderController extends Controller
 
                         // Transfer the order items to the past_order_items table
                         foreach ($order->items as $item) {
+                            $product = Product::findOrFail($item->product_id);
                             PastOrderItem::create([
                                 'past_order_id' => $pastOrder->id,
                                 'product_id' => $item->product_id,
@@ -536,16 +539,16 @@ class OrderController extends Controller
                             ]);
 
                             // Decrement product inventory
-                            $product = Product::findOrFail($item->product_id);
                             $product->decrement('quantity', $item->quantity);
-                            
+
                             // Set quantity to zero instead of deleting product
                             if ($product->quantity <= 0) {
                                 $product->quantity = 0;
                                 $product->save();
                             }
                         }
-                        
+                        // No profit persistence as requested
+
                         // Delete the original order
                         $order->delete();
                     }
@@ -553,14 +556,15 @@ class OrderController extends Controller
             }
 
             DB::commit(); // Commit the transaction
-            
+
             return response()->json(['success' => true, 'message' => 'Inventory deducted and orders archived successfully.'], 200);
 
         } catch (\Exception $e) {
             DB::rollBack(); // Roll back in case of an error
+
             return response()->json([
                 'success' => false,
-                'message' => 'Inventory deduction failed: ' . $e->getMessage()
+                'message' => 'Inventory deduction failed: ' . $e->getMessage(),
             ], 400);
         }
     }
@@ -572,19 +576,19 @@ class OrderController extends Controller
     {
         // Get current date in YYYYMMDD format
         $datePrefix = now()->format('Ymd');
-        
+
         // Get the count of past orders created today + 1
         $todayCount = PastOrder::whereDate('created_at', now()->toDateString())->count() + 1;
-        
+
         // Generate DR number in format: DR-YYYYMMDD-XXXX (e.g., DR-20250117-0001)
         $drNumber = sprintf('DR-%s-%04d', $datePrefix, $todayCount);
-        
+
         // Ensure uniqueness by checking if it already exists
         while (PastOrder::where('dr_number', $drNumber)->exists()) {
             $todayCount++;
             $drNumber = sprintf('DR-%s-%04d', $datePrefix, $todayCount);
         }
-        
+
         return $drNumber;
     }
 }

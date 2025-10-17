@@ -2,36 +2,35 @@
 
 namespace App\Http\Controllers\Manager;
 
+use App\Exports\DiscrepancyReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\PastOrder;
 use App\Models\RejectedGood;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\DiscrepancyReportExport;
 
 class DiscrepancyReportController extends Controller
 {
     public function index()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('Login');
         }
 
         // Get all DR numbers that exist in either past orders or rejected goods
         $drNumbers = collect();
-        
+
         // Get DR numbers from past orders
         $pastOrderDRs = PastOrder::whereNotNull('dr_number')
             ->pluck('dr_number')
             ->unique();
-            
+
         // Get DR numbers from rejected goods
         $rejectedGoodsDRs = RejectedGood::whereNotNull('dr_no')
             ->pluck('dr_no')
             ->unique();
-            
+
         // Combine and sort
         $drNumbers = $pastOrderDRs->merge($rejectedGoodsDRs)
             ->unique()
@@ -47,7 +46,7 @@ class DiscrepancyReportController extends Controller
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'dr_numbers' => 'nullable|array',
-            'dr_numbers.*' => 'string'
+            'dr_numbers.*' => 'string',
         ]);
 
         $startDate = $request->start_date;
@@ -98,7 +97,7 @@ class DiscrepancyReportController extends Controller
     private function prepareDiscrepancyData($pastOrders, $rejectedGoods)
     {
         $data = [];
-        
+
         // Debug logging
         \Log::info('Discrepancy Report Debug', [
             'past_orders_count' => $pastOrders->count(),
@@ -106,29 +105,29 @@ class DiscrepancyReportController extends Controller
             'sample_past_order_dr' => $pastOrders->first() ? $pastOrders->first()->dr_number : 'None',
             'sample_rejected_good_dr' => $rejectedGoods->first() ? $rejectedGoods->first()->dr_no : 'None',
         ]);
-        
+
         // Group past orders by DR number
         $pastOrdersByDR = $pastOrders->groupBy('dr_number');
-        
-        // Group rejected goods by DR number  
+
+        // Group rejected goods by DR number
         $rejectedGoodsByDR = $rejectedGoods->groupBy('dr_no');
-        
+
         // Get all unique DR numbers
         $allDRs = collect($pastOrdersByDR->keys())
             ->merge($rejectedGoodsByDR->keys())
             ->unique()
             ->sort();
-            
+
         \Log::info('DR Numbers Found', [
             'past_orders_drs' => $pastOrdersByDR->keys()->toArray(),
             'rejected_goods_drs' => $rejectedGoodsByDR->keys()->toArray(),
-            'all_unique_drs' => $allDRs->toArray()
+            'all_unique_drs' => $allDRs->toArray(),
         ]);
 
         foreach ($allDRs as $drNumber) {
             $pastOrder = $pastOrdersByDR->get($drNumber)->first();
             $rejectedGoodsItems = $rejectedGoodsByDR->get($drNumber, collect());
-            
+
             if ($pastOrder && $pastOrder->items) {
                 // Create a map of rejected items by product ID for quick lookup
                 $rejectedItemsMap = [];
@@ -138,23 +137,23 @@ class DiscrepancyReportController extends Controller
                         foreach ($rejectedGood->items as $rejectedItem) {
                             $productId = $rejectedItem->product_id;
                             $productName = $rejectedItem->product->name ?? 'Unknown Product';
-                            
-                            if (!isset($rejectedItemsMap[$productId])) {
+
+                            if (! isset($rejectedItemsMap[$productId])) {
                                 $rejectedItemsMap[$productId] = [
                                     'product_name' => $productName,
                                     'quantity' => 0,
                                     'amount' => 0,
-                                    'reasons' => []
+                                    'reasons' => [],
                                 ];
                             }
-                            
+
                             // Get the price from the original sales order item for this product
                             $orderItem = $pastOrder->items->where('product_id', $productId)->first();
                             $itemPrice = $orderItem ? $orderItem->price : 0;
-                            
+
                             $rejectedItemsMap[$productId]['quantity'] += $rejectedItem->quantity;
                             $rejectedItemsMap[$productId]['amount'] += $rejectedItem->quantity * $itemPrice;
-                            
+
                             // Collect reasons, including empty ones
                             if ($rejectedGood->reason && trim($rejectedGood->reason) !== '') {
                                 $rejectedItemsMap[$productId]['reasons'][] = trim($rejectedGood->reason);
@@ -170,30 +169,30 @@ class DiscrepancyReportController extends Controller
                                 'product_name' => 'Multiple Products',
                                 'quantity' => 1,
                                 'amount' => $rejectedGood->amount,
-                                'reasons' => $rejectedGood->reason && trim($rejectedGood->reason) !== '' ? [trim($rejectedGood->reason)] : []
+                                'reasons' => $rejectedGood->reason && trim($rejectedGood->reason) !== '' ? [trim($rejectedGood->reason)] : [],
                             ];
                         }
                     }
                 }
-                
+
                 // Process each item in the past order
                 foreach ($pastOrder->items as $orderItem) {
                     $productId = $orderItem->product_id;
                     $productName = $orderItem->product->name ?? 'Unknown Product';
                     $salesAmount = $orderItem->quantity * $orderItem->price;
-                    
+
                     // Get rejected info for this specific product ID
                     $rejectedInfo = $rejectedItemsMap[$productId] ?? ['product_name' => $productName, 'quantity' => 0, 'amount' => 0, 'reasons' => []];
                     $rejectedAmount = $rejectedInfo['amount'];
                     $netAmount = $salesAmount - $rejectedAmount;
-                    
+
                     // Build remarks - only show if there are actual reasons
                     $remarks = '';
-                    if ($rejectedInfo['quantity'] > 0 && !empty($rejectedInfo['reasons'])) {
+                    if ($rejectedInfo['quantity'] > 0 && ! empty($rejectedInfo['reasons'])) {
                         $reasons = array_unique(array_filter($rejectedInfo['reasons'])); // Remove empty values
-                        $remarks = !empty($reasons) ? implode(', ', $reasons) : '';
+                        $remarks = ! empty($reasons) ? implode(', ', $reasons) : '';
                     }
-                    
+
                     $data[] = [
                         'date' => $pastOrder->created_at->format('m-d-y'),
                         'store' => $pastOrder->branch->name ?? 'N/A',
@@ -204,15 +203,15 @@ class DiscrepancyReportController extends Controller
                         'amount' => $salesAmount,
                         'less' => $rejectedAmount,
                         'net_amount' => $netAmount,
-                        'remarks' => $remarks
+                        'remarks' => $remarks,
                     ];
                 }
-                
+
                 // Handle rejected goods without corresponding sales (if any)
                 foreach ($rejectedItemsMap as $productId => $rejectedInfo) {
                     // Skip if this product was already processed above
                     $alreadyProcessed = $pastOrder->items->where('product_id', $productId)->count() > 0;
-                    if (!$alreadyProcessed && $productId !== 'no_breakdown') {
+                    if (! $alreadyProcessed && $productId !== 'no_breakdown') {
                         $data[] = [
                             'date' => $pastOrder->created_at->format('m-d-y'),
                             'store' => $pastOrder->branch->name ?? 'N/A',
@@ -223,14 +222,14 @@ class DiscrepancyReportController extends Controller
                             'amount' => 0,
                             'less' => $rejectedInfo['amount'],
                             'net_amount' => -$rejectedInfo['amount'],
-                            'remarks' => implode(', ', $rejectedInfo['reasons'])
+                            'remarks' => implode(', ', $rejectedInfo['reasons']),
                         ];
                     }
                 }
             } else {
                 // Handle cases where there are rejected goods but no past order
                 \Log::info('Processing rejected goods without past order for DR: ' . $drNumber);
-                
+
                 foreach ($rejectedGoodsItems as $rejectedGood) {
                     if ($rejectedGood->items && $rejectedGood->items->count() > 0) {
                         foreach ($rejectedGood->items as $rejectedItem) {
@@ -240,7 +239,7 @@ class DiscrepancyReportController extends Controller
                             $productPrice = $rejectedItem->product->price ?? 0;
                             $rejectedAmount = $rejectedItem->quantity * $productPrice;
                             $remarks = $rejectedGood->reason && trim($rejectedGood->reason) !== '' ? trim($rejectedGood->reason) : '';
-                            
+
                             $data[] = [
                                 'date' => $rejectedGood->date ? date('m-d-y', strtotime($rejectedGood->date)) : 'N/A',
                                 'store' => $rejectedGood->branch->name ?? 'N/A',
@@ -251,7 +250,7 @@ class DiscrepancyReportController extends Controller
                                 'amount' => 0,
                                 'less' => $rejectedAmount,
                                 'net_amount' => -$rejectedAmount,
-                                'remarks' => $remarks
+                                'remarks' => $remarks,
                             ];
                         }
                     } else {
@@ -266,7 +265,7 @@ class DiscrepancyReportController extends Controller
                             'amount' => 0,
                             'less' => $rejectedGood->amount ?? 0,
                             'net_amount' => -($rejectedGood->amount ?? 0),
-                            'remarks' => $rejectedGood->reason && trim($rejectedGood->reason) !== '' ? trim($rejectedGood->reason) : ''
+                            'remarks' => $rejectedGood->reason && trim($rejectedGood->reason) !== '' ? trim($rejectedGood->reason) : '',
                         ];
                     }
                 }

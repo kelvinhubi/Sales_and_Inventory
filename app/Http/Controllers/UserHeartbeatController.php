@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Models\User;
 
 class UserHeartbeatController extends Controller
 {
@@ -23,25 +23,27 @@ class UserHeartbeatController extends Controller
     {
         try {
             $user = $request->user();
-            
-            if (!$user) {
+
+            if (! $user) {
                 Log::warning('Heartbeat: No authenticated user found');
+
                 return response()->json(['error' => 'Unauthenticated'], 401);
             }
 
             if ($user->Role !== 'Manager' && $user->Role !== 'Owner') {
                 Log::warning('Heartbeat: Non-manager user attempted access', ['user_id' => $user->id]);
+
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
 
             // Get activity status from request
             $isActive = $request->input('is_active', false);
-            $lastActivity = $request->input('last_activity') 
+            $lastActivity = $request->input('last_activity')
                 ? Carbon::parse($request->input('last_activity'))
                 : now();
 
             // More granular status determination
-            if (!$isActive) {
+            if (! $isActive) {
                 // User explicitly marked as inactive (browser closed, etc.)
                 $isOnline = false;
             } elseif ($lastActivity->lt(now()->subMinutes(5))) {
@@ -58,12 +60,12 @@ class UserHeartbeatController extends Controller
                 'is_active' => $isActive,
                 'is_online' => $isOnline,
                 'last_activity' => $lastActivity,
-                'timestamp' => now()
+                'timestamp' => now(),
             ]);
 
             $user->update([
                 'last_activity' => $lastActivity,
-                'is_online' => $isOnline
+                'is_online' => $isOnline,
             ]);
 
             return response()->json([
@@ -73,14 +75,15 @@ class UserHeartbeatController extends Controller
                     'is_online' => $isOnline,
                     'is_active' => $isActive,
                     'last_activity' => $user->last_activity,
-                    'status_text' => $this->getStatusText($isActive, $isOnline, $lastActivity)
-                ]
+                    'status_text' => $this->getStatusText($isActive, $isOnline, $lastActivity),
+                ],
             ]);
         } catch (\Exception $e) {
             Log::error('Heartbeat error:', [
                 'error' => $e->getMessage(),
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
+
             return response()->json(['error' => 'Server error'], 500);
         }
     }
@@ -98,14 +101,15 @@ class UserHeartbeatController extends Controller
 
             Log::info('Online users fetched', [
                 'total_managers' => $users->count(),
-                'online_count' => $users->where('is_online', true)->count()
+                'online_count' => $users->where('is_online', true)->count(),
             ]);
 
             return response()->json($users);
         } catch (\Exception $e) {
             Log::error('Error fetching online users:', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return response()->json(['error' => 'Server error'], 500);
         }
     }
@@ -126,8 +130,9 @@ class UserHeartbeatController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Error updating inactive users:', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             throw $e;
         }
     }
@@ -137,16 +142,16 @@ class UserHeartbeatController extends Controller
      */
     private function getStatusText($isActive, $isOnline, $lastActivity)
     {
-        if (!$isOnline) {
+        if (! $isOnline) {
             return 'Offline';
         }
-        
-        if (!$isActive) {
+
+        if (! $isActive) {
             return 'Away';
         }
-        
+
         $minutesSinceActivity = now()->diffInMinutes($lastActivity);
-        
+
         if ($minutesSinceActivity < 1) {
             return 'Active';
         } elseif ($minutesSinceActivity < 5) {

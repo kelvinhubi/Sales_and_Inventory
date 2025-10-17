@@ -3,24 +3,23 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Doctrine\DBAL\Types\Type;
-use Doctrine\DBAL\Types\StringType;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        // Add new columns first
+        // Add new columns first (avoid MySQL-specific placement modifiers for portability)
         Schema::table('branches', function (Blueprint $table) {
-            $table->string('contact_person')->after('address')->nullable();
-            $table->enum('status', ['active', 'inactive'])->default('active')->after('contact');
+            $table->string('contact_person')->nullable();
+            $table->enum('status', ['active', 'inactive'])->default('active');
         });
 
-        // Then rename the contact column
-        DB::statement('ALTER TABLE branches CHANGE contact contact_number varchar(255)');
+        // Then rename the contact column using Schema builder (requires doctrine/dbal)
+        Schema::table('branches', function (Blueprint $table) {
+            $table->renameColumn('contact', 'contact_number');
+        });
     }
 
     /**
@@ -29,7 +28,9 @@ return new class extends Migration
     public function down(): void
     {
         // First rename back the column
-        DB::statement('ALTER TABLE branches CHANGE contact_number contact varchar(255)');
+        Schema::table('branches', function (Blueprint $table) {
+            $table->renameColumn('contact_number', 'contact');
+        });
 
         // Then drop the added columns
         Schema::table('branches', function (Blueprint $table) {

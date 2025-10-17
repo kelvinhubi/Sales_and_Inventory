@@ -122,6 +122,17 @@
                 </div>
                 <div class="row">
                     <div class="col-lg-6">
+                        <div class="card card-success card-outline">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h3 class="card-title"><i class="fas fa-balance-scale mr-2"></i>Profit vs Expenses</h3>
+                                <div><strong>Total Profit:</strong> <span id="profitTotal">₱0</span> &nbsp; <strong>Total Expenses:</strong> <span id="expenseTotal">₱0</span></div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="profitVsExpenseChart" style="height: 300px; width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
                         <div class="card card-info card-outline">
                             <div class="card-header">
                                 <h3 class="card-title"><i class="fas fa-store mr-2"></i>Orders per Store</h3>
@@ -255,7 +266,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         $(document).ready(function() {
-            let salesPerStoreChart, salesPerBrandChart, productSalesChart, revenueLossPerProductChart, ordersPerStoreChart, ordersPerBrandChart, inventoryStatusChart, monthlySalesTrendChart;
+            let salesPerStoreChart, salesPerBrandChart, productSalesChart, revenueLossPerProductChart, ordersPerStoreChart, ordersPerBrandChart, inventoryStatusChart, monthlySalesTrendChart, profitVsExpenseChart;
 
             // Fetch brands, branches, and products for filters
             async function fetchFilters() {
@@ -337,6 +348,14 @@
                         updateBarChart('ordersPerBrandChart', response.orders_per_brand, 'Orders per Brand', ordersPerBrandChart);
                         updateBarChart('inventoryStatusChart', response.inventory_status, 'Inventory Status', inventoryStatusChart);
                         updateBarChart('monthlySalesTrendChart', response.monthly_sales_trend, 'Monthly Sales Trend', monthlySalesTrendChart);
+
+                        // Profit vs Expenses
+                        if (response.profit_vs_expenses) {
+                            const pve = response.profit_vs_expenses;
+                            $('#profitTotal').text(`₱${Number(pve.profit_total||0).toLocaleString()}`);
+                            $('#expenseTotal').text(`₱${Number(pve.expense_total||0).toLocaleString()}`);
+                            updateLineChart('profitVsExpenseChart', pve.monthly_profit, pve.monthly_expense);
+                        }
                     }
                 } catch (error) {
                     console.error("Error fetching dashboard data:", error);
@@ -383,6 +402,32 @@
                     case 'inventoryStatusChart': inventoryStatusChart = chartInstance; break;
                     case 'monthlySalesTrendChart': monthlySalesTrendChart = chartInstance; break;
                 }
+            }
+
+            function updateLineChart(canvasId, monthlyProfit, monthlyExpense) {
+                const labels = Array.from({length:12}, (_,i)=>new Date(0, i).toLocaleString('en',{month:'short'}));
+                const profitData = labels.map(m => monthlyProfit[m] ?? 0);
+                const expenseData = labels.map(m => monthlyExpense[m] ?? 0);
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                if (profitVsExpenseChart) profitVsExpenseChart.destroy();
+                profitVsExpenseChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: 'Profit', data: profitData, borderColor: 'rgba(40, 167, 69, 1)', backgroundColor: 'rgba(40, 167, 69, .15)', tension: .2 },
+                            { label: 'Expenses', data: expenseData, borderColor: 'rgba(220, 53, 69, 1)', backgroundColor: 'rgba(220, 53, 69, .15)', tension: .2 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true }
+                        },
+                        plugins: { legend: { position: 'top' } }
+                    }
+                });
             }
 
             // Year dropdown always shows 5 years

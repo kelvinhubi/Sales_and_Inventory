@@ -8,27 +8,34 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     use HasFactory;
+    use HasFactory;
 
     // Relationship for rejected good items
     public function rejectedGoodItems()
     {
         return $this->hasMany(\App\Models\RejectedGoodItem::class);
     }
-    use HasFactory;
 
     protected $fillable = [
         'name',
         'price',
+        'original_price',
         'quantity',
         'perishable',
-        'expiration_date'
+        'expiration_date',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'original_price' => 'decimal:2',
         'quantity' => 'integer',
-        'expiration_date' => 'date'
+        'expiration_date' => 'date',
     ];
+
+    public function inventory()
+    {
+        return $this->hasOne(\App\Models\Inventory::class, 'product_id');
+    }
 
     // Scope for low stock products
     public function scopeLowStock($query)

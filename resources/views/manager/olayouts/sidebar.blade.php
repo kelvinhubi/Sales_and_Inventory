@@ -185,10 +185,10 @@
             </li>
             
             <li class="nav-item">
-              <a href="" class="nav-link">
-                <i class="nav-icon fa fa-scroll"></i>
+              <a href="{{ route('manager.expenses') }}" class="nav-link {{ request()->routeIs('manager.expenses') ? ' active' : '' }}">
+                <i class="nav-icon fas fa-receipt"></i>
                 <p>
-                   for edit
+                   Expenses
                 </p>
               </a>
             </li>

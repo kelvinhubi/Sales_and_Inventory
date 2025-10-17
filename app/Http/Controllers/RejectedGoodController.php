@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class RejectedGoodController extends Controller
 {
@@ -16,7 +16,7 @@ class RejectedGoodController extends Controller
         return response()->json([
             'success' => true,
             'data' => [],
-            'message' => 'Rejected goods functionality coming soon'
+            'message' => 'Rejected goods functionality coming soon',
         ]);
     }
 
@@ -28,7 +28,7 @@ class RejectedGoodController extends Controller
         // Placeholder - will be implemented with DR number dropdown
         return response()->json([
             'success' => true,
-            'message' => 'Rejected good stored successfully'
+            'message' => 'Rejected good stored successfully',
         ]);
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
 use App\Models\Branch;
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\RejectedGood;
 use Illuminate\Http\Request;
@@ -14,36 +14,37 @@ class RejectedGoodsController extends Controller
 {
     public function index()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
-        
+
         $rejectedGoods = RejectedGood::with(['brand', 'branch', 'items.product'])->paginate(10);
+
         return view('manager.rejected-goods.index', compact('rejectedGoods'));
     }
 
     public function create()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
-        
+
         $brands = Brand::all();
         $branches = Branch::all();
         $products = Product::select('id', 'name', 'price')->get();
-        
+
         // Get available DR numbers from past orders
         $drNumbers = \App\Models\PastOrder::whereNotNull('dr_number')
                      ->orderBy('created_at', 'desc')
                      ->pluck('dr_number', 'dr_number')
                      ->toArray();
-                     
+
         return view('manager.rejected-goods.create', compact('brands', 'branches', 'products', 'drNumbers'));
     }
 
     public function store(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
 
@@ -92,24 +93,25 @@ class RejectedGoodsController extends Controller
 
     public function show(RejectedGood $rejectedGood)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
-        
+
         $rejectedGood->load(['brand', 'branch', 'items.product']);
+
         return view('manager.rejected-goods.show', compact('rejectedGood'));
     }
 
     public function destroy(RejectedGood $rejectedGood)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('homepage');
         }
 
         try {
             // Delete related items first
             $rejectedGood->items()->delete();
-            
+
             // Delete the rejected goods record
             $rejectedGood->delete();
 
@@ -122,7 +124,7 @@ class RejectedGoodsController extends Controller
 
     public function getDrDetails($drNumber)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -131,7 +133,7 @@ class RejectedGoodsController extends Controller
                                               ->where('dr_number', $drNumber)
                                               ->first();
 
-            if (!$pastOrder) {
+            if (! $pastOrder) {
                 return response()->json(['error' => 'DR number not found'], 404);
             }
 
@@ -147,7 +149,7 @@ class RejectedGoodsController extends Controller
                         'price' => $item->price,
                         'total' => $item->quantity * $item->price,
                     ];
-                })
+                }),
             ];
 
             return response()->json($response);
