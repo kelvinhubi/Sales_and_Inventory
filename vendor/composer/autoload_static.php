@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit9c491b8531eec05ba41a11d9276a5749
+class ComposerStaticInit27961e6f422162a0af4d9e30e4158169
 {
     public static $files = array (
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
@@ -4273,12 +4273,10 @@ class ComposerStaticInit9c491b8531eec05ba41a11d9276a5749
         'Maatwebsite\\Excel\\Middleware\\CellMiddleware' => __DIR__ . '/..' . '/maatwebsite/excel/src/Middleware/CellMiddleware.php',
         'Maatwebsite\\Excel\\Middleware\\ConvertEmptyCellValuesToNull' => __DIR__ . '/..' . '/maatwebsite/excel/src/Middleware/ConvertEmptyCellValuesToNull.php',
         'Maatwebsite\\Excel\\Middleware\\TrimCellValue' => __DIR__ . '/..' . '/maatwebsite/excel/src/Middleware/TrimCellValue.php',
-        'Maatwebsite\\Excel\\Mixins\\DownloadCollection' => __DIR__ . '/..' . '/maatwebsite/excel/src/Mixins/DownloadCollection.php',
         'Maatwebsite\\Excel\\Mixins\\DownloadCollectionMixin' => __DIR__ . '/..' . '/maatwebsite/excel/src/Mixins/DownloadCollectionMixin.php',
         'Maatwebsite\\Excel\\Mixins\\DownloadQueryMacro' => __DIR__ . '/..' . '/maatwebsite/excel/src/Mixins/DownloadQueryMacro.php',
         'Maatwebsite\\Excel\\Mixins\\ImportAsMacro' => __DIR__ . '/..' . '/maatwebsite/excel/src/Mixins/ImportAsMacro.php',
         'Maatwebsite\\Excel\\Mixins\\ImportMacro' => __DIR__ . '/..' . '/maatwebsite/excel/src/Mixins/ImportMacro.php',
-        'Maatwebsite\\Excel\\Mixins\\StoreCollection' => __DIR__ . '/..' . '/maatwebsite/excel/src/Mixins/StoreCollection.php',
         'Maatwebsite\\Excel\\Mixins\\StoreCollectionMixin' => __DIR__ . '/..' . '/maatwebsite/excel/src/Mixins/StoreCollectionMixin.php',
         'Maatwebsite\\Excel\\Mixins\\StoreQueryMacro' => __DIR__ . '/..' . '/maatwebsite/excel/src/Mixins/StoreQueryMacro.php',
         'Maatwebsite\\Excel\\QueuedWriter' => __DIR__ . '/..' . '/maatwebsite/excel/src/QueuedWriter.php',
@@ -8833,7 +8831,6 @@ class ComposerStaticInit9c491b8531eec05ba41a11d9276a5749
         'Symfony\\Component\\VarDumper\\Cloner\\Cursor' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Cursor.php',
         'Symfony\\Component\\VarDumper\\Cloner\\Data' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Data.php',
         'Symfony\\Component\\VarDumper\\Cloner\\DumperInterface' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/DumperInterface.php',
-        'Symfony\\Component\\VarDumper\\Cloner\\Internal\\NoDefault' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Internal/NoDefault.php',
         'Symfony\\Component\\VarDumper\\Cloner\\Stub' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/Stub.php',
         'Symfony\\Component\\VarDumper\\Cloner\\VarCloner' => __DIR__ . '/..' . '/symfony/var-dumper/Cloner/VarCloner.php',
         'Symfony\\Component\\VarDumper\\Command\\Descriptor\\CliDescriptor' => __DIR__ . '/..' . '/symfony/var-dumper/Command/Descriptor/CliDescriptor.php',
@@ -9012,10 +9009,10 @@ class ComposerStaticInit9c491b8531eec05ba41a11d9276a5749
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit9c491b8531eec05ba41a11d9276a5749::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit9c491b8531eec05ba41a11d9276a5749::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit9c491b8531eec05ba41a11d9276a5749::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit9c491b8531eec05ba41a11d9276a5749::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit27961e6f422162a0af4d9e30e4158169::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit27961e6f422162a0af4d9e30e4158169::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit27961e6f422162a0af4d9e30e4158169::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit27961e6f422162a0af4d9e30e4158169::$classMap;
 
         }, null, ClassLoader::class);
     }
