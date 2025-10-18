@@ -16,16 +16,16 @@ class Product extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         // Clear AI insights cache when products are created, updated, or deleted
         static::created(function () {
             self::clearAIInsightsCache();
         });
-        
+
         static::updated(function () {
             self::clearAIInsightsCache();
         });
-        
+
         static::deleted(function () {
             self::clearAIInsightsCache();
         });
@@ -42,7 +42,7 @@ class Product extends Model
             $cacheKey = 'ai_business_insights_' . $today->copy()->addHours($i)->format('Y-m-d-H');
             Cache::forget($cacheKey);
         }
-        
+
         // Also clear current hour cache
         $currentCacheKey = 'ai_business_insights_' . $today->format('Y-m-d-H');
         Cache::forget($currentCacheKey);

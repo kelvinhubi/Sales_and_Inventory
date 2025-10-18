@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\AIBusinessIntelligenceService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Exception;
 
 /**
  * AI Insights Controller
- * 
+ *
  * Provides AI-powered business intelligence endpoints
  */
 class AIInsightsController extends Controller
@@ -24,7 +24,7 @@ class AIInsightsController extends Controller
 
     /**
      * Get comprehensive business insights
-     * 
+     *
      * GET /api/ai/insights
      */
     public function getInsights(): JsonResponse
@@ -47,7 +47,7 @@ class AIInsightsController extends Controller
 
     /**
      * Get inventory recommendations
-     * 
+     *
      * GET /api/ai/recommendations/inventory
      */
     public function getInventoryRecommendations(): JsonResponse
@@ -70,7 +70,7 @@ class AIInsightsController extends Controller
 
     /**
      * Answer a natural language question
-     * 
+     *
      * POST /api/ai/ask
      * Body: { "question": "Why did sales drop?" }
      */
@@ -99,7 +99,7 @@ class AIInsightsController extends Controller
 
     /**
      * Get business health score
-     * 
+     *
      * GET /api/ai/health-score
      */
     public function getHealthScore(): JsonResponse
@@ -122,7 +122,7 @@ class AIInsightsController extends Controller
 
     /**
      * Get quick daily brief
-     * 
+     *
      * GET /api/ai/daily-brief
      */
     public function getDailyBrief(): JsonResponse
@@ -157,7 +157,7 @@ class AIInsightsController extends Controller
 
     /**
      * Clear AI insights cache
-     * 
+     *
      * POST /api/ai/clear-cache
      */
     public function clearCache(): JsonResponse
@@ -166,14 +166,14 @@ class AIInsightsController extends Controller
             // Clear all AI insights cache keys for different hours
             $today = now();
             $clearedKeys = 0;
-            
+
             for ($i = 0; $i < 24; $i++) {
                 $cacheKey = 'ai_business_insights_' . $today->copy()->addHours($i)->format('Y-m-d-H');
                 if (cache()->forget($cacheKey)) {
                     $clearedKeys++;
                 }
             }
-            
+
             // Also clear current hour cache
             $currentCacheKey = 'ai_business_insights_' . $today->format('Y-m-d-H');
             cache()->forget($currentCacheKey);

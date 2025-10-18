@@ -15,7 +15,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class OrderController extends Controller
@@ -407,7 +406,7 @@ class OrderController extends Controller
                         $product = Product::find($item->product_id);
                         $currentStock = $product ? $product->quantity : 0;
                         $afterDeduction = max(0, $currentStock - $item->quantity);
-                        
+
                         return [
                             'product_id' => $item->product_id,
                             'name' => $item->name, // Use 'name' field

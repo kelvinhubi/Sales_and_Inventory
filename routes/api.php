@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AIInsightsController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\AIInsightsController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\UserHeartbeatController;
@@ -45,7 +45,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('orders/statistics', [OrderController::class, 'statistics']);
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('expenses', ExpenseController::class);
-    
+
     Route::get('branches', function () {
         return response()->json([
             'data' => \App\Models\Branch::with('brand')->get()->map(function ($branch) {
@@ -57,7 +57,7 @@ Route::middleware(['web', 'auth'])->group(function () {
             }),
         ]);
     });
-    
+
     Route::get('productss', function () {
         return response()->json([
             'data' => \App\Models\Product::all(['id', 'name','quantity', 'price']),
@@ -83,7 +83,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/dashboard/brands', [DashboardController::class, 'brands']);
     Route::get('/dashboard/branches', [DashboardController::class, 'getBranches']);
     Route::get('/dashboard/products', [DashboardController::class, 'getProducts']);
-    
+
     Route::get('/user', function (Request $request) {
         return $request->user();
     });

@@ -2,20 +2,18 @@
 
 namespace App\Services;
 
-use App\Models\Product;
+use App\Models\Branch;
+use App\Models\Expense;
 use App\Models\PastOrder;
 use App\Models\PastOrderItem;
-use App\Models\Expense;
-use App\Models\Brand;
-use App\Models\Branch;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
+use App\Models\Product;
 use Illuminate\Support\Carbon;
-use Exception;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 /**
  * AI Business Intelligence Service
- * 
+ *
  * Provides AI-powered insights, predictions, and recommendations
  * for business decision-making.
  */
@@ -30,14 +28,14 @@ class AIBusinessIntelligenceService
     public function getBusinessInsights(): array
     {
         $cacheKey = 'ai_business_insights_' . Carbon::now()->format('Y-m-d-H');
-        
+
         if ($this->cacheEnabled && Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
 
         $data = $this->gatherBusinessData();
         $insights = $this->analyzeBusinessData($data);
-        
+
         if ($this->cacheEnabled) {
             Cache::put($cacheKey, $insights, $this->cacheTTL);
         }
@@ -79,12 +77,12 @@ class AIBusinessIntelligenceService
 
         $thisWeekSales = PastOrder::whereBetween('created_at', [
             $today->copy()->startOfWeek(),
-            $today->copy()->endOfWeek()
+            $today->copy()->endOfWeek(),
         ])->sum('total_amount');
 
         $lastWeekSales = PastOrder::whereBetween('created_at', [
             $today->copy()->subWeek()->startOfWeek(),
-            $today->copy()->subWeek()->endOfWeek()
+            $today->copy()->subWeek()->endOfWeek(),
         ])->sum('total_amount');
 
         return [
@@ -92,11 +90,11 @@ class AIBusinessIntelligenceService
             'last_month' => $lastMonthSales,
             'this_week' => $thisWeekSales,
             'last_week' => $lastWeekSales,
-            'month_growth' => $lastMonthSales > 0 
-                ? (($thisMonthSales - $lastMonthSales) / $lastMonthSales) * 100 
+            'month_growth' => $lastMonthSales > 0
+                ? (($thisMonthSales - $lastMonthSales) / $lastMonthSales) * 100
                 : 0,
-            'week_growth' => $lastWeekSales > 0 
-                ? (($thisWeekSales - $lastWeekSales) / $lastWeekSales) * 100 
+            'week_growth' => $lastWeekSales > 0
+                ? (($thisWeekSales - $lastWeekSales) / $lastWeekSales) * 100
                 : 0,
         ];
     }
@@ -148,8 +146,8 @@ class AIBusinessIntelligenceService
         return [
             'this_month' => $thisMonthExpenses,
             'last_month' => $lastMonthExpenses,
-            'growth' => $lastMonthExpenses > 0 
-                ? (($thisMonthExpenses - $lastMonthExpenses) / $lastMonthExpenses) * 100 
+            'growth' => $lastMonthExpenses > 0
+                ? (($thisMonthExpenses - $lastMonthExpenses) / $lastMonthExpenses) * 100
                 : 0,
             'by_category' => $expensesByCategory,
         ];
@@ -161,10 +159,10 @@ class AIBusinessIntelligenceService
     private function getProductPerformance(): array
     {
         $top10 = PastOrderItem::select(
-                'product_id',
-                DB::raw('SUM(quantity) as total_sold'),
-                DB::raw('SUM(quantity * price) as total_revenue')
-            )
+            'product_id',
+            DB::raw('SUM(quantity) as total_sold'),
+            DB::raw('SUM(quantity * price) as total_revenue')
+        )
             ->with('product:id,name,quantity')
             ->groupBy('product_id')
             ->orderByDesc('total_sold')
@@ -172,10 +170,10 @@ class AIBusinessIntelligenceService
             ->get();
 
         $bottom10 = PastOrderItem::select(
-                'product_id',
-                DB::raw('SUM(quantity) as total_sold'),
-                DB::raw('SUM(quantity * price) as total_revenue')
-            )
+            'product_id',
+            DB::raw('SUM(quantity) as total_sold'),
+            DB::raw('SUM(quantity * price) as total_revenue')
+        )
             ->with('product:id,name,quantity')
             ->groupBy('product_id')
             ->orderBy('total_sold')
@@ -247,7 +245,9 @@ class AIBusinessIntelligenceService
     private function calculateTrend($data): string
     {
         $values = $data->pluck('sales')->toArray();
-        if (count($values) < 2) return 'stable';
+        if (count($values) < 2) {
+            return 'stable';
+        }
 
         $firstHalf = array_slice($values, 0, ceil(count($values) / 2));
         $secondHalf = array_slice($values, ceil(count($values) / 2));
@@ -255,8 +255,13 @@ class AIBusinessIntelligenceService
         $avgFirst = array_sum($firstHalf) / count($firstHalf);
         $avgSecond = array_sum($secondHalf) / count($secondHalf);
 
-        if ($avgSecond > $avgFirst * 1.1) return 'growing';
-        if ($avgSecond < $avgFirst * 0.9) return 'declining';
+        if ($avgSecond > $avgFirst * 1.1) {
+            return 'growing';
+        }
+        if ($avgSecond < $avgFirst * 0.9) {
+            return 'declining';
+        }
+
         return 'stable';
     }
 
@@ -486,7 +491,7 @@ class AIBusinessIntelligenceService
         // Simple linear regression forecast
         $avg = array_sum($values) / count($values);
         $trend = $data['trends']['trend'];
-        
+
         $nextMonthEstimate = $avg;
         if ($trend === 'growing') {
             $nextMonthEstimate = $avg * 1.1;
@@ -515,9 +520,13 @@ class AIBusinessIntelligenceService
 
         // Sales performance (30 points)
         $salesScore = 0;
-        if ($data['sales']['month_growth'] > 10) $salesScore = 30;
-        elseif ($data['sales']['month_growth'] > 0) $salesScore = 20;
-        elseif ($data['sales']['month_growth'] > -10) $salesScore = 10;
+        if ($data['sales']['month_growth'] > 10) {
+            $salesScore = 30;
+        } elseif ($data['sales']['month_growth'] > 0) {
+            $salesScore = 20;
+        } elseif ($data['sales']['month_growth'] > -10) {
+            $salesScore = 10;
+        }
         $score += $salesScore;
         $breakdown['sales_performance'] = $salesScore;
 
@@ -528,17 +537,25 @@ class AIBusinessIntelligenceService
 
         // Trend (20 points)
         $trendScore = 0;
-        if ($data['trends']['trend'] === 'growing') $trendScore = 20;
-        elseif ($data['trends']['trend'] === 'stable') $trendScore = 15;
-        else $trendScore = 5;
+        if ($data['trends']['trend'] === 'growing') {
+            $trendScore = 20;
+        } elseif ($data['trends']['trend'] === 'stable') {
+            $trendScore = 15;
+        } else {
+            $trendScore = 5;
+        }
         $score += $trendScore;
         $breakdown['trend'] = $trendScore;
 
         // Expense control (20 points)
         $expenseScore = 20;
-        if ($data['expenses']['growth'] > 20) $expenseScore = 5;
-        elseif ($data['expenses']['growth'] > 10) $expenseScore = 10;
-        elseif ($data['expenses']['growth'] > 0) $expenseScore = 15;
+        if ($data['expenses']['growth'] > 20) {
+            $expenseScore = 5;
+        } elseif ($data['expenses']['growth'] > 10) {
+            $expenseScore = 10;
+        } elseif ($data['expenses']['growth'] > 0) {
+            $expenseScore = 15;
+        }
         $score += $expenseScore;
         $breakdown['expense_control'] = $expenseScore;
 
@@ -554,11 +571,22 @@ class AIBusinessIntelligenceService
      */
     private function getGrade(float $score): string
     {
-        if ($score >= 90) return 'A+';
-        if ($score >= 80) return 'A';
-        if ($score >= 70) return 'B';
-        if ($score >= 60) return 'C';
-        if ($score >= 50) return 'D';
+        if ($score >= 90) {
+            return 'A+';
+        }
+        if ($score >= 80) {
+            return 'A';
+        }
+        if ($score >= 70) {
+            return 'B';
+        }
+        if ($score >= 60) {
+            return 'C';
+        }
+        if ($score >= 50) {
+            return 'D';
+        }
+
         return 'F';
     }
 
@@ -575,13 +603,13 @@ class AIBusinessIntelligenceService
             $salesLast30Days = PastOrderItem::where('product_id', $product->id)
                 ->whereBetween('created_at', [
                     Carbon::now()->subDays(30),
-                    Carbon::now()
+                    Carbon::now(),
                 ])
                 ->sum('quantity');
 
             $dailyVelocity = $salesLast30Days / 30;
-            $daysUntilStockout = $dailyVelocity > 0 
-                ? $product->quantity / $dailyVelocity 
+            $daysUntilStockout = $dailyVelocity > 0
+                ? $product->quantity / $dailyVelocity
                 : 999;
 
             // Generate recommendation
@@ -651,7 +679,7 @@ class AIBusinessIntelligenceService
     private function analyzeSalesDecline(array $data): array
     {
         $reasons = [];
-        
+
         if ($data['inventory']['out_of_stock'] > 0) {
             $reasons[] = "{$data['inventory']['out_of_stock']} products are out of stock, potentially causing lost sales";
         }

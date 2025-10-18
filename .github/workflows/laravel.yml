@@ -193,16 +193,20 @@ jobs:
     - name: Install Dependencies
       run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
+    - name: Set vendor binary permissions
+      run: |
+        find vendor/bin -type f -exec chmod +x {} \; 2>/dev/null || true
+
     - name: Run PHP CS Fixer (Code Style)
       run: |
         if ! composer show friendsofphp/php-cs-fixer > /dev/null 2>&1; then
           composer require --dev friendsofphp/php-cs-fixer
         fi
-        vendor/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
+        composer run-script code-style-check
 
     - name: Run PHPStan (Static Analysis)
       run: |
         if ! composer show phpstan/phpstan > /dev/null 2>&1; then
           composer require --dev phpstan/phpstan
         fi
-        vendor/bin/phpstan analyse --memory-limit=2G --no-progress
+        composer run-script static-analysis
