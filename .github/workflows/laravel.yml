@@ -191,15 +191,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.1'
-
-    - name: Install Composer Dependencies
-      run: |
-        composer install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
-
-    - name: Copy production environment file
-      run: |
-        cp .env.production .env
+        php-version: 'PHP 8.4 - stable'
 
     - name: Generate Application Key
       run: php artisan key:generate
