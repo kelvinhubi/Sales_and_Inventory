@@ -188,14 +188,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: 'PHP 8.4 - stable'
-
-    - name: Generate Application Key
-      run: php artisan key:generate
-
     - name: Deploy to InfinityFree via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
