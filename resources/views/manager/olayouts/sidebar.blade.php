@@ -135,14 +135,7 @@
               </a>
             </li>
 
-            <li class="nav-item">
-              <a href="{{route('manager.discrepancy-report.index')}}" class="nav-link{{ request()->routeIs('manager.discrepancy-report.*') ? ' active' : '' }}">
-                <i class="nav-icon fas fa-chart-line"></i>
-                <p>
-                  Discrepancy Report
-                </p>
-              </a>
-            </li>
+            
 
             <li class="nav-item">
               <a href="{{route('manager.brands')}}" class="nav-link {{ request()->routeIs('manager.brands') ? ' active' : '' }}">
@@ -162,7 +155,18 @@
               </a>
             </li>
 
-             <li class="nav-item">
+            <li class="nav-header">Generate Reports</li>
+
+            <li class="nav-item">
+              <a href="{{route('manager.discrepancy-report.index')}}" class="nav-link{{ request()->routeIs('manager.discrepancy-report.*') ? ' active' : '' }}">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>
+                  Discrepancy Report
+                </p>
+              </a>
+            </li>
+
+            <li class="nav-item">
               <a href="{{ route('manager.past-orders.index') }}" class="nav-link {{ request()->routeIs('manager.past-orders.*') ? ' active' : '' }}">
                 <i class="nav-icon fas fa-history"></i>
                 <p>
@@ -170,8 +174,7 @@
                 </p>
               </a>
             </li>
-
-
+            
             <li class="nav-header">Maintenance</li>
 
 

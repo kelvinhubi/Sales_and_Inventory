@@ -524,7 +524,7 @@
                 try {
                     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-                    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    const fetchOptions = {
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
@@ -536,22 +536,46 @@
                         },
                         credentials: 'same-origin',
                         ...options
-                    });
+                    };
 
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-
-                        if (response.status === 422 && errorData.errors) {
-                            const errorMessages = Object.values(errorData.errors).flat().join(', ');
-                            throw new Error(errorMessages);
-                        }
-
-                        throw new Error(errorData.message || errorData.error ||
-                            `HTTP ${response.status}: ${response.statusText}`);
+                    // Use POST with _method for PUT/DELETE to ensure compatibility with InfinityFree
+                    if (options.method === 'PUT' || options.method === 'DELETE') {
+                        const body = options.body ? JSON.parse(options.body) : {};
+                        body._method = options.method;
+                        fetchOptions.body = JSON.stringify(body);
+                        fetchOptions.method = 'POST';
                     }
 
-                    const data = await response.json();
-                    return data.data || data;
+                    // Add timeout for InfinityFree (30 seconds)
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 30000);
+                    fetchOptions.signal = controller.signal;
+
+                    try {
+                        const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
+                        clearTimeout(timeoutId);
+
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            let errorMessage = errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+                            if (response.status === 422 && errorData.errors) {
+                                const errorMessages = Object.values(errorData.errors).flat();
+                                errorMessage = errorMessages.join(' ');
+                            }
+                            throw new Error(errorMessage);
+                        }
+
+                        const responseText = await response.text();
+                        const data = responseText ? JSON.parse(responseText) : {};
+                        return data.data || data;
+
+                    } catch (fetchError) {
+                        clearTimeout(timeoutId);
+                        if (fetchError.name === 'AbortError') {
+                            throw new Error('Request timeout - please try again');
+                        }
+                        throw fetchError;
+                    }
 
                 } catch (error) {
                     console.error('API Error:', error);
