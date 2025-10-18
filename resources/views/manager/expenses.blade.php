@@ -7,7 +7,7 @@
         <div class="col-sm-6"><h1 class="m-0">Expenses</h1></div>
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="{{ route('manager') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('owner') }}">Dashboard</a></li>
             <li class="breadcrumb-item active">Expenses</li>
           </ol>
         </div>
@@ -97,20 +97,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const brandSelect = document.getElementById('brandSelect');
   const branchSelect = document.getElementById('branchSelect');
 
+  let brandsById = {}; let branchesById = {};
+
+  // Get CSRF token from meta tag
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+  // Helper function to create headers with CSRF token
+  function getHeaders() {
+    return {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRF-TOKEN': csrfToken
+    };
+  }
+
   async function loadBrandsBranches() {
     try {
       const [brandsRes, branchesRes] = await Promise.all([
-        fetch('/api/brands'),
-        fetch('/api/branches')
+        fetch('/api/brands', { headers: getHeaders() }),
+        fetch('/api/branches', { headers: getHeaders() })
       ]);
       const brands = await brandsRes.json();
       const branches = await branchesRes.json();
       brandSelect.innerHTML = '<option value="">All Brands</option>';
-      branches.forEach(b => {});
-      brands.forEach(b => brandSelect.insertAdjacentHTML('beforeend', `<option value="${b.id}">${b.name}</option>`));
-
+      brands.forEach(b => { brandsById[b.id] = b; brandSelect.insertAdjacentHTML('beforeend', `<option value="${b.id}">${b.name}</option>`)});
       branchSelect.innerHTML = '<option value="">All Branches</option>';
-      branches.forEach(br => branchSelect.insertAdjacentHTML('beforeend', `<option value="${br.id}">${br.name}</option>`));
+      branches.forEach(br => { branchesById[br.id] = br; branchSelect.insertAdjacentHTML('beforeend', `<option value="${br.id}">${br.name}</option>`)});
     } catch (e) {
       console.error('Failed to load brands/branches', e);
     }
@@ -130,18 +141,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const brand_id = brandSelect.value || '';
       const branch_id = branchSelect.value || '';
       const qs = new URLSearchParams({ from: from||'', to: to||'', brand_id, branch_id }).toString();
-      const res = await fetch(`/api/expenses?${qs}`);
+      const res = await fetch(`/api/expenses?${qs}`, { headers: getHeaders() });
       const json = await res.json();
       tbody.innerHTML = '';
       const list = json.data || [];
       list.forEach(exp => {
         const tr = document.createElement('tr');
+        const brandName = exp.brand_id ? (brandsById[exp.brand_id]?.name || exp.brand_id) : '';
+        const branchName = exp.branch_id ? (branchesById[exp.branch_id]?.name || exp.branch_id) : '';
         tr.innerHTML = `
           <td>${exp.date}</td>
           <td>${exp.category}</td>
           <td class="text-right">₱${Number(exp.amount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-          <td>${exp.brand_id ?? ''}</td>
-          <td>${exp.branch_id ?? ''}</td>
+          <td>${brandName}</td>
+          <td>${branchName}</td>
           <td class="text-right">
             <button class="btn btn-xs btn-danger" data-id="${exp.id}">Delete</button>
           </td>`;
@@ -149,12 +162,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       totalEl.textContent = `₱${Number(json.total||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
 
-      // Wire delete buttons
       tbody.querySelectorAll('button[data-id]').forEach(btn => {
         btn.addEventListener('click', async () => {
           if (!confirm('Delete this expense?')) return;
           const id = btn.getAttribute('data-id');
-          const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+          const res = await fetch(`/api/expenses/${id}`, { 
+            method: 'DELETE', 
+            headers: getHeaders()
+          });
           await res.json();
           await loadExpenses();
         });
@@ -169,7 +184,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const fd = new FormData(form);
     const body = Object.fromEntries(fd.entries());
     try {
-      const res = await fetch('/api/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const res = await fetch('/api/expenses', { 
+        method: 'POST', 
+        headers: {
+          ...getHeaders(),
+          'Content-Type': 'application/json'
+        }, 
+        body: JSON.stringify(body) 
+      });
       const json = await res.json();
       if (!json.success) { alert('Failed to save'); return; }
       form.reset();

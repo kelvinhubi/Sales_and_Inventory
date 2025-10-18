@@ -192,30 +192,7 @@
                 </p>
               </a>
             </li>
-            <li class="nav-item">
-                <a href="" class="nav-link">
-                    <i class="nav-icon fa fa-users-cog"></i>
-                  <p>
-                     for edit
-                  </p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="" class="nav-link">
-                    <i class="nav-icon fa fa-desktop"></i>
-                  <p>
-                     for edit
-                  </p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="" class="nav-link">
-                    <i class="nav-icon fa fa-cogs"></i>
-                  <p>
-                     for edit
-                  </p>
-                </a>
-            </li>
+
 
 
 

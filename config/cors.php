@@ -25,8 +25,8 @@ return [
         'http://localhost:8000',
         'http://127.0.0.1:8000',
         // Add your production domains here:
-        // 'https://yourdomain.com',
-        // 'https://www.yourdomain.com',
+        'https://sales-and-inventory.great-site.net/',
+        'https://www.sales-and-inventory.great-site.net/',
     ],
 
     'allowed_origins_patterns' => [],

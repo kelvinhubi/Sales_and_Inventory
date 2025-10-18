@@ -121,24 +121,6 @@
             </li>
 
             <li class="nav-item">
-              <a href="{{route('owner.rejected-goods.index')}}" class="nav-link{{ request()->routeIs('owner.rejected-goods.*') ? ' active' : '' }}">
-                <i class="nav-icon fas fa-times-circle"></i>
-                <p>
-                  Rejected Goods
-                </p>
-              </a>
-            </li>
-
-            <li class="nav-item">
-              <a href="{{route('owner.discrepancy-report.index')}}" class="nav-link{{ request()->routeIs('owner.discrepancy-report.*') ? ' active' : '' }}">
-                <i class="nav-icon fas fa-chart-line"></i>
-                <p>
-                  Discrepancy Report
-                </p>
-              </a>
-            </li>
-
-            <li class="nav-item">
               <a href="{{route('owner.brands')}}" class="nav-link {{ request()->routeIs('owner.brands') ? ' active' : '' }}"">
                 <i class="nav-icon fas fa-handshake"></i>
                 <p>
@@ -156,7 +138,26 @@
               </a>
             </li>
 
-             <li class="nav-item">
+            <li class="nav-item">
+              <a href="{{route('owner.rejected-goods.index')}}" class="nav-link{{ request()->routeIs('owner.rejected-goods.*') ? ' active' : '' }}">
+                <i class="nav-icon fas fa-times-circle"></i>
+                <p>
+                  Rejected Goods
+                </p>
+              </a>
+            </li>
+            <li class="nav-header">Report Generation</li>
+
+            <li class="nav-item">
+              <a href="{{route('owner.discrepancy-report.index')}}" class="nav-link{{ request()->routeIs('owner.discrepancy-report.*') ? ' active' : '' }}">
+                <i class="nav-icon fas fa-chart-line"></i>
+                <p>
+                  Discrepancy Report
+                </p>
+              </a>
+            </li>
+            
+            <li class="nav-item">
               <a href="{{ route('owner.past-orders.index') }}" class="nav-link {{ request()->routeIs('owner.past-orders.index') ? ' active' : '' }}">
                 <i class="nav-icon fas fa-history"></i>
                 <p>
@@ -164,8 +165,6 @@
                 </p>
               </a>
             </li>
-
-
             <li class="nav-header">Maintenance</li>
 
 
@@ -185,30 +184,6 @@
                    Expenses
                 </p>
               </a>
-            </li>
-            <li class="nav-item">
-                <a href="" class="nav-link">
-                    <i class="nav-icon fa fa-users-cog"></i>
-                  <p>
-                     for edit
-                  </p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="" class="nav-link">
-                    <i class="nav-icon fa fa-desktop"></i>
-                  <p>
-                     for edit
-                  </p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="" class="nav-link">
-                    <i class="nav-icon fa fa-cogs"></i>
-                  <p>
-                     for edit
-                  </p>
-                </a>
             </li>
 
 

@@ -403,12 +403,20 @@ class OrderController extends Controller
                     'created_at' => $order->created_at->toISOString(),
                     'notes' => $order->notes,
                     'items' => $order->items->map(function ($item) {
+                        // Get current inventory stock for this product
+                        $product = Product::find($item->product_id);
+                        $currentStock = $product ? $product->quantity : 0;
+                        $afterDeduction = max(0, $currentStock - $item->quantity);
+                        
                         return [
                             'product_id' => $item->product_id,
                             'name' => $item->name, // Use 'name' field
                             'quantity' => $item->quantity,
                             'price' => number_format($item->price, 2, '.', ''), // Use 'price' field
                             'subtotal' => number_format($item->quantity * $item->price, 2, '.', ''),
+                            'current_stock' => $currentStock,
+                            'after_deduction' => $afterDeduction,
+                            'deduction_amount' => $item->quantity,
                         ];
                     }),
                 ];

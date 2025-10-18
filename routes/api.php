@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\AIInsightsController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\UserHeartbeatController;
@@ -86,4 +87,14 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+});
+
+// AI Business Intelligence routes - require authentication
+Route::middleware(['web', 'auth'])->prefix('ai')->group(function () {
+    Route::get('/insights', [AIInsightsController::class, 'getInsights']);
+    Route::get('/recommendations/inventory', [AIInsightsController::class, 'getInventoryRecommendations']);
+    Route::post('/ask', [AIInsightsController::class, 'askQuestion']);
+    Route::get('/health-score', [AIInsightsController::class, 'getHealthScore']);
+    Route::get('/daily-brief', [AIInsightsController::class, 'getDailyBrief']);
+    Route::post('/clear-cache', [AIInsightsController::class, 'clearCache']);
 });

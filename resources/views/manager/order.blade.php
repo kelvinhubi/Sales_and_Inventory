@@ -1,4 +1,5 @@
 @extends('manager.olayouts.main')
+
 @section('content')
 
     <head>
@@ -132,6 +133,22 @@
                 text-align: center;
                 font-size: 1.2rem;
                 font-weight: bold;
+            }
+
+            /* Inventory Badge Styles */
+            .badge-lg {
+                font-size: 0.9rem;
+                padding: 0.4rem 0.6rem;
+            }
+
+            .table th {
+                font-weight: 600;
+                background-color: #f8f9fa;
+            }
+
+            .table td .badge {
+                min-width: 50px;
+                display: inline-block;
             }
 
             /* Dashboard Summary Styles */
@@ -1492,6 +1509,19 @@
                                 <td class="text-center">${item.quantity}</td>
                                 <td class="text-right">₱${parseFloat(item.price).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
                                 <td class="text-right">₱${(item.quantity * item.price).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                                <td class="text-center">
+                                    <span class="badge ${item.current_stock < item.deduction_amount ? 'badge-danger' : 'badge-success'}">
+                                        ${item.current_stock}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge badge-warning">${item.deduction_amount}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge ${item.after_deduction === 0 ? 'badge-danger' : (item.after_deduction <= 10 ? 'badge-warning' : 'badge-info')}">
+                                        ${item.after_deduction}
+                                    </span>
+                                </td>
                             </tr>
                         `).join('')
                         ).join('');
@@ -1517,6 +1547,9 @@
                                                 <th class="text-center">Quantity</th>
                                                 <th class="text-right">Price</th>
                                                 <th class="text-right">Total</th>
+                                                <th class="text-center">Current Stock</th>
+                                                <th class="text-center">To Deduct</th>
+                                                <th class="text-center">After Deduction</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1684,17 +1717,17 @@
                         if (tableData.length > 0) {
                             doc.autoTable({
                                 head: [
-                                    ['Item', 'Quantity', 'Price', 'Total']
+                                    ['Item', 'Qty', 'Price', 'Total', 'Stock', 'Deduct', 'After']
                                 ],
                                 body: tableData,
                                 startY: yPosition,
                                 margin: {
-                                    left: 30,
-                                    right: 30
+                                    left: 15,
+                                    right: 15
                                 },
                                 styles: {
-                                    fontSize: 10,
-                                    cellPadding: 3
+                                    fontSize: 9,
+                                    cellPadding: 2
                                 },
                                 headStyles: {
                                     fillColor: [0, 123, 255],
@@ -1709,19 +1742,31 @@
                                 },
                                 columnStyles: {
                                     0: {
-                                        cellWidth: 80
+                                        cellWidth: 50
                                     },
                                     1: {
-                                        cellWidth: 30,
+                                        cellWidth: 18,
                                         halign: 'center'
                                     },
                                     2: {
-                                        cellWidth: 30,
+                                        cellWidth: 25,
                                         halign: 'right'
                                     },
                                     3: {
-                                        cellWidth: 30,
+                                        cellWidth: 25,
                                         halign: 'right'
+                                    },
+                                    4: {
+                                        cellWidth: 20,
+                                        halign: 'center'
+                                    },
+                                    5: {
+                                        cellWidth: 20,
+                                        halign: 'center'
+                                    },
+                                    6: {
+                                        cellWidth: 20,
+                                        halign: 'center'
                                     }
                                 },
                                 didDrawPage: function(data) {
