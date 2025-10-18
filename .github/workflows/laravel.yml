@@ -176,3 +176,51 @@ jobs:
 
     - name: Run Security Checker
       run: composer audit
+
+
+  deploy-to-infinityfree:
+    runs-on: ubuntu-latest
+    name: Deploy to InfinityFree
+    needs: [laravel-tests, security-scan]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+
+    - name: Install Composer Dependencies
+      run: |
+        composer install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
+
+    - name: Copy production environment file
+      run: |
+        cp .env.production .env
+
+    - name: Generate Application Key
+      run: php artisan key:generate
+
+    - name: Deploy to InfinityFree via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.INFINITYFREE_FTP_HOST }}
+        username: ${{ secrets.INFINITYFREE_FTP_USERNAME }}
+        password: ${{ secrets.INFINITYFREE_FTP_PASSWORD }}
+        local-dir: ./
+        server-dir: /htdocs/Laravel/
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/tests/**
+          **/.github/**
+          **/.env
+          **/README.md
+          **/storage/logs/**
+  
+      
+
