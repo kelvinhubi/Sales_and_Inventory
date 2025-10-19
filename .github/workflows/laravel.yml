@@ -204,6 +204,8 @@ jobs:
           **/.github/**
           **/.env
           **/README.md
+          **/vendor/**
+          **/public/**
           **/storage/logs/**
   
       
