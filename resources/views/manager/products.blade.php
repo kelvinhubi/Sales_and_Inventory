@@ -286,7 +286,7 @@
                                         <th>Product Name</th>
                                         <th>Price</th>
                                         <th>Original Cost</th>
-                                        <th>Unit Profit</th>
+                                        <th hidden>Unit Profit</th>
                                         <th>Quantity</th>
                                         <th hidden>Perishable</th>
                                         <th hidden>Expiration Date</th>
@@ -730,7 +730,7 @@
                        <td>${product.name}</td>
                        <td><span class="product-price">₱${parseFloat(product.price).toFixed(2)}</span></td>
                        <td>₱${originalCost.toFixed(2)}</td>
-                       <td>${unitProfit >= 0 ? '<span class="text-success">' : '<span class="text-danger">'}₱${unitProfit.toFixed(2)}</span></td>
+                       <td hidden>${unitProfit >= 0 ? '<span class="text-success">' : '<span class="text-danger">'}₱${unitProfit.toFixed(2)}</span></td>
                        <td>
                            <span class="quantity-badge ${quantityClass}">
                                ${product.quantity} ${product.quantity === 1 ? 'unit' : 'units'}
