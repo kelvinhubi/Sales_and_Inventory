@@ -37,7 +37,7 @@ class DiscrepancyReportController extends Controller
             ->sort()
             ->values();
 
-        return view('owner.discrepancy-report.index', compact('drNumbers'));
+        return view('manager.discrepancy-report.index', compact('drNumbers'));
     }
 
     public function generate(Request $request)

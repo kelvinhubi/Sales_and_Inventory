@@ -84,13 +84,17 @@ Route::get('signup', [signup::class, 'showForm'])->name('Signup');
 Route::get('login', [login::class, 'showForm'])->name('Login');
 Route::get('logout', [login::class, 'logout'])->name('logout');
 
-// Rate-limited authentication routes (5 attempts per minute)
-Route::middleware('throttle:5,1')->group(function () {
+// Rate-limited authentication routes (10 attempts per minute for login only)
+Route::middleware('throttle:10,1')->group(function () {
     Route::post('login', [login::class, 'loginUser'])->name('loginUser');
-    Route::post('logout', [login::class, 'logout'])->name('logout');
     Route::post('signup', [signup::class, 'createUser'])->name('createUser');
+});
 
-    // Password Reset Routes
+// Logout should NOT be rate limited - users should always be able to logout
+Route::post('logout', [login::class, 'logout'])->name('logout');
+
+// Password reset with separate, less aggressive rate limiting
+Route::middleware('throttle:3,1')->group(function () {
     Route::post('password/email', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
     Route::post('password/update', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
 });
