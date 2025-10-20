@@ -188,7 +188,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Deploy to InfinityFree via FTP
+    - name: "Deploy to InfinityFree DIR Location: /htdocs/Laravel/"
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
         server: ${{ secrets.INFINITYFREE_FTP_HOST }}
@@ -207,6 +207,22 @@ jobs:
           **/vendor/**
           **/public/**
           **/storage/logs/**
-  
-      
-
+    - name: "Deploy to InfinityFree DIR Location: /htdocs"
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.INFINITYFREE_FTP_HOST }}
+        username: ${{ secrets.INFINITYFREE_FTP_USERNAME }}
+        password: ${{ secrets.INFINITYFREE_FTP_PASSWORD }}
+        local-dir: ./
+        server-dir: /htdocs
+        include: |
+          **/public/admin/**
+          **/public/assets/**
+          **/public/css/**
+          **/public/js/**
+          **/public/images/**
+          **/public/dist/**
+          **/public/custom/**
+          **/public/plugins/**
+          **/public/storage/**
+          **/*.md
