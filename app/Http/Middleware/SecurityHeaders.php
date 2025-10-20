@@ -31,7 +31,7 @@ class SecurityHeaders
         $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
 
         // Content Security Policy - Configured for development with CDN support
-        /*
+        
         $csp = implode('; ', [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net cdnjs.cloudflare.com code.jquery.com",
@@ -41,7 +41,7 @@ class SecurityHeaders
             "connect-src 'self' ws: wss:",
         ]);
         $response->headers->set('Content-Security-Policy', $csp);
-        */
+        
         // HTTPS Strict Transport Security (enable in production with HTTPS)
         if ($request->secure()) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
