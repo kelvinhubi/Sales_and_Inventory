@@ -214,7 +214,7 @@ jobs:
         username: ${{ secrets.INFINITYFREE_FTP_USERNAME }}
         password: ${{ secrets.INFINITYFREE_FTP_PASSWORD }}
         local-dir: ./
-        server-dir: /htdocs
+        server-dir: /htdocs/
         include: |
           **/public/admin/**
           **/public/assets/**
