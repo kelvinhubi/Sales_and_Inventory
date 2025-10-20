@@ -178,14 +178,14 @@
             <li class="nav-header">Maintenance</li>
 
 
-            <li class="nav-item">
+            {{--<li class="nav-item">
               <a href="{{route('manager.managers')}}" class="nav-link {{ request()->routeIs('manager.managers') ? ' active' : '' }}">
                 <i class="nav-icon fas fa-clipboard-list"></i>
                 <p>
                    Manage Accounts
                 </p>
               </a>
-            </li>
+            </li>--}}
             
             <li class="nav-item">
               <a href="{{ route('manager.expenses') }}" class="nav-link {{ request()->routeIs('manager.expenses') ? ' active' : '' }}">
