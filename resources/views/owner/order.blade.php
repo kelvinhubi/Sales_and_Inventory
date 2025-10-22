@@ -1,3 +1,4 @@
+use data;
 @extends('owner.olayouts.main')
 
 @section('content')
@@ -218,6 +219,313 @@
             #dashboardSummaryContent::-webkit-scrollbar-thumb:hover {
                 background: #218838;
             }
+
+            /* Kiosk Style Order Modal */
+            .kiosk-modal .modal-dialog {
+                max-width: 95%;
+                height: 90vh;
+            }
+
+            .kiosk-modal .modal-content {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .kiosk-modal .modal-header {
+                flex-shrink: 0;
+                z-index: 10;
+            }
+
+            .kiosk-modal .modal-body {
+                flex: 1;
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding: 20px;
+                background: white;
+            }
+
+            .kiosk-modal .modal-footer {
+                position: relative;
+                flex-shrink: 0;
+                background: white;
+                border-top: 2px solid #dee2e6;
+                z-index: 10;
+            }
+
+            .kiosk-products-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+                margin-bottom: 20px;
+                min-height: 200px;
+            }
+
+            .kiosk-product-card {
+                background: white;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                padding: 15px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: center;
+                position: relative;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+
+            .kiosk-product-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+                border-color: #007bff;
+            }
+
+            .kiosk-product-card.selected {
+                border-color: #28a745;
+                background: #f0fff4;
+                box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+            }
+
+            .kiosk-product-card.out-of-stock {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background: #f8f9fa;
+            }
+
+            .kiosk-product-card.out-of-stock:hover {
+                transform: none;
+                box-shadow: none;
+            }
+
+            .kiosk-product-image {
+                width: 80px;
+                height: 80px;
+                margin: 0 auto 10px;
+                background: #f8f9fa;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2.5rem;
+                color: #6c757d;
+            }
+
+            .kiosk-product-name {
+                font-weight: 600;
+                font-size: 0.95rem;
+                margin-bottom: 8px;
+                color: #333;
+                min-height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .kiosk-product-price {
+                font-size: 1.1rem;
+                color: #28a745;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+
+            .kiosk-product-stock {
+                font-size: 0.8rem;
+                color: #6c757d;
+                margin-bottom: 10px;
+            }
+
+            .kiosk-product-stock.low-stock {
+                color: #ffc107;
+                font-weight: 600;
+            }
+
+            .kiosk-quantity-controls {
+                display: none;
+                margin-top: 10px;
+            }
+
+            .kiosk-product-card.selected .kiosk-quantity-controls {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .kiosk-qty-btn {
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                border: 2px solid #28a745;
+                background: white;
+                color: #28a745;
+                font-size: 1.2rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .kiosk-qty-btn:hover {
+                background: #28a745;
+                color: white;
+            }
+
+            .kiosk-qty-input {
+                width: 60px;
+                text-align: center;
+                font-size: 1.1rem;
+                font-weight: bold;
+                border: 2px solid #28a745;
+                border-radius: 5px;
+                padding: 5px;
+            }
+
+            .kiosk-selected-badge {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: #28a745;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
+            }
+
+            .kiosk-product-card.selected .kiosk-selected-badge {
+                display: flex;
+            }
+
+            .kiosk-cart-summary {
+                background: white;
+                border: 2px solid #28a745;
+                border-radius: 10px;
+                padding: 20px;
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .kiosk-notes-section {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 10px;
+                margin-top: 20px;
+                margin-bottom: 0;
+            }
+
+            .kiosk-notes-section textarea {
+                resize: vertical;
+                min-height: 80px;
+                background: white;
+            }
+
+            .kiosk-cart-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                border-bottom: 1px solid #e0e0e0;
+                margin-bottom: 8px;
+            }
+
+            .kiosk-cart-item:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+            }
+
+            .kiosk-cart-item-name {
+                font-weight: 600;
+                flex: 1;
+            }
+
+            .kiosk-cart-item-qty {
+                color: #6c757d;
+                margin: 0 15px;
+            }
+
+            .kiosk-cart-item-subtotal {
+                font-weight: bold;
+                color: #28a745;
+            }
+
+            .kiosk-cart-total {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-top: 15px;
+                border-top: 2px solid #28a745;
+                font-size: 1.3rem;
+                font-weight: bold;
+            }
+
+            .kiosk-search-box {
+                margin-bottom: 20px;
+            }
+
+            .kiosk-search-input {
+                width: 100%;
+                padding: 12px 20px;
+                font-size: 1.1rem;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                transition: all 0.3s;
+            }
+
+            #manualAddBtn {
+                font-weight: 600;
+                box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+            }
+
+            #manualAddBtn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+            }
+
+            .kiosk-search-input:focus {
+                border-color: #007bff;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            }
+
+            .out-of-stock-badge {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                background: #dc3545;
+                color: white;
+                padding: 3px 8px;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: bold;
+            }
+
+            .standard-item-badge {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                background: #007bff;
+                color: white;
+                padding: 3px 8px;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: bold;
+                z-index: 1;
+            }
+
+            .kiosk-product-card.standard-item {
+                border-color: #007bff;
+            }
+
+            .kiosk-product-card.standard-item:not(.selected):hover {
+                border-color: #0056b3;
+                box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+            }
         </style>
     </head>
 
@@ -383,100 +691,161 @@
             </div>
         </div>
 
-        <div class="modal fade" id="orderFormModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-lg" role="document">
+        <div class="modal fade kiosk-modal" id="orderFormModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header bg-primary">
-                        <h4 class="modal-title text-white" id="orderFormTitle">Add New Order</h4>
+                        <h4 class="modal-title text-white" id="orderFormTitle">
+                            <i class="fas fa-shopping-cart mr-2"></i>Add New Order
+                        </h4>
                         <button type="button" class="close text-white" data-dismiss="modal">
                             <span>&times;</span>
                         </button>
                     </div>
                     <form id="orderForm">
                         <div class="modal-body">
-                            <div class="row">
+                            <!-- Brand and Branch Selection -->
+                            <div class="row mb-4">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="orderBrand">Brand <span class="text-danger">*</span></label>
-                                        <select class="form-control" id="orderBrand" required>
+                                        <label for="orderBrand" class="font-weight-bold">
+                                            <i class="fas fa-store mr-1"></i>Brand <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-control form-control-lg" id="orderBrand" required>
                                             <option value="">Select Brand</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="orderBranch">Branch <span class="text-danger">*</span></label>
-                                        <select class="form-control" id="orderBranch" required>
+                                        <label for="orderBranch" class="font-weight-bold">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>Branch <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-control form-control-lg" id="orderBranch" required>
                                             <option value="">Select Branch</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <label class="mb-0">
-                                        <input type="checkbox" id="selectAllItems" style="width: 16px; height: 16px; margin-right: 8px;">
-                                        Order Items (Select All)
-                                    </label>
-                                </div>
-                                <div id="orderItemsContainer">
-                                    <div class="order-item-row">
-                                        <div class="row mb-2 align-items-center">
-                                            <div class="col-md-auto px-2">
-                                                <input type="checkbox" class="item-checkbox" style="width: 18px; height: 18px;">
-                                            </div>
-                                            <div class="col-md-4">
-                                                <select class="form-control item-product" required>
-                                                    <option value="">Select Product</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <input type="number" class="form-control item-quantity"
-                                                    placeholder="Qty" min="1" required>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <input type="number" class="form-control item-price" placeholder="Price"
-                                                    step="0.01" min="0" readonly>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <div class="text-right font-weight-bold item-subtotal">₱0.00</div>
-                                            </div>
-                                            <div class="col-md-1">
-                                                <button type="button" class="btn btn-danger btn-sm remove-item"
-                                                    style="display: none;">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </div>
+                            <!-- Search Box -->
+                            <div class="kiosk-search-box">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <input type="text" class="kiosk-search-input" id="kioskSearchInput" 
+                                               placeholder="🔍 Search products...">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="button" class="btn btn-info btn-lg btn-block" id="toggleProductsBtn" onclick="toggleShowAllProducts()">
+                                            <i class="fas fa-filter mr-2"></i><span id="toggleBtnText">Show All</span>
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="button" class="btn btn-warning btn-lg btn-block" id="manualAddBtn">
+                                            <i class="fas fa-plus-circle mr-2"></i>Manual Add
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="d-flex justify-content-between align-items-center mt-2">
-                                    <button type="button" class="btn btn-success btn-sm" id="addItemBtn">
-                                        <i class="fas fa-plus mr-1"></i>Add Product
-                                    </button>
-                                    <button type="button" class="btn btn-danger btn-sm" id="massDeleteBtn" style="display: none;">
-                                        <i class="fas fa-trash-alt mr-1"></i>Delete Selected Items
-                                    </button>
+                            </div>
+
+                            <!-- Products Grid -->
+                            <div id="kioskProductsGrid" class="kiosk-products-grid">
+                                <!-- Products will be dynamically loaded here -->
+                            </div>
+
+                            <!-- Cart Summary -->
+                            <div class="kiosk-cart-summary" id="kioskCartSummary" style="display: none;">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-shopping-basket mr-2"></i>Selected Items
+                                </h5>
+                                <div id="kioskCartItems">
+                                    <!-- Cart items will be displayed here -->
+                                </div>
+                                <div class="kiosk-cart-total">
+                                    <span>Total:</span>
+                                    <span id="kioskTotalAmount">₱0.00</span>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="orderNotes">Notes</label>
-                                <textarea class="form-control" id="orderNotes" rows="3" placeholder="Additional notes..."></textarea>
-                            </div>
-
-                            <div class="order-total">
-                                <div class="d-flex justify-content-between">
-                                    <span>Total Amount:</span>
-                                    <span id="orderTotalAmount">₱0.00</span>
-                                </div>
+                            <!-- Notes Section - Fixed at bottom of content -->
+                            <div class="kiosk-notes-section">
+                                <label for="orderNotes" class="font-weight-bold">
+                                    <i class="fas fa-sticky-note mr-1"></i>Notes
+                                </label>
+                                <textarea class="form-control" id="orderNotes" rows="2" 
+                                          placeholder="Additional notes (optional)..."></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="button" class="btn btn-secondary btn-lg" data-dismiss="modal">
+                                <i class="fas fa-times mr-2"></i>Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-save mr-2"></i>Save Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Add Product Modal -->
+        <div class="modal fade" id="manualAddModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h4 class="modal-title text-white">
+                            <i class="fas fa-plus-circle mr-2"></i>Manually Add Product
+                        </h4>
+                        <button type="button" class="close text-white" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <form id="manualAddForm">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="manualProductSelect" class="font-weight-bold">
+                                    <i class="fas fa-box mr-1"></i>Select Product <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-control form-control-lg" id="manualProductSelect" required>
+                                    <option value="">Choose a product...</option>
+                                </select>
+                                <small class="form-text text-muted">Select a product that's not in the standard items</small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="manualQuantity" class="font-weight-bold">
+                                            <i class="fas fa-sort-numeric-up mr-1"></i>Quantity <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" class="form-control form-control-lg" id="manualQuantity" 
+                                               min="1" value="1" required>
+                                        <small class="form-text text-muted" id="manualStockInfo"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="manualPrice" class="font-weight-bold">
+                                            <i class="fas fa-tag mr-1"></i>Price
+                                        </label>
+                                        <input type="text" class="form-control form-control-lg" id="manualPrice" 
+                                               readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Tip:</strong> This allows you to add products that aren't in the standard items list.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                <i class="fas fa-times mr-2"></i>Cancel
+                            </button>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-plus mr-2"></i>Add to Cart
                             </button>
                         </div>
                     </form>
@@ -519,6 +888,351 @@
             let products = [];
             let editingOrderId = null;
             let finalOrderSummary = {};
+            let kioskCart = {}; // Store selected products: { productId: { product, quantity } }
+            let standardItemIds = []; // Store IDs of standard items for current brand
+            let showAllProducts = false; // Toggle to show all products or only standard items
+
+            // 🛒 Kiosk-Style Functions
+            function renderKioskProducts() {
+                const grid = $('#kioskProductsGrid');
+                grid.empty();
+
+                if (products.length === 0) {
+                    grid.html(`
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No products available. Please select a brand first.</p>
+                        </div>
+                    `);
+                    return;
+                }
+
+                // Filter products based on showAllProducts flag
+                let displayProducts = products;
+                if (!showAllProducts && standardItemIds.length > 0) {
+                    // Show only standard items
+                    displayProducts = products.filter(p => standardItemIds.includes(p.id));
+                }
+
+                if (displayProducts.length === 0 && standardItemIds.length > 0) {
+                    grid.html(`
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No standard items available.</p>
+                            <button type="button" class="btn btn-warning mt-3" onclick="toggleShowAllProducts()">
+                                <i class="fas fa-eye mr-2"></i>Show All Products
+                            </button>
+                        </div>
+                    `);
+                    return;
+                }
+
+                displayProducts.forEach(product => {
+                    const isOutOfStock = product.quantity <= 0;
+                    const isLowStock = product.quantity > 0 && product.quantity <= 10;
+                    const isSelected = kioskCart[product.id];
+                    const quantity = isSelected ? kioskCart[product.id].quantity : 0;
+                    const isStandardItem = standardItemIds.includes(product.id);
+
+                    const productCard = $(`
+                        <div class="kiosk-product-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'out-of-stock' : ''} ${isStandardItem ? 'standard-item' : ''}" 
+                             data-product-id="${product.id}"
+                             data-product-name="${product.name.toLowerCase()}">
+                            ${isOutOfStock ? '<div class="out-of-stock-badge">OUT OF STOCK</div>' : ''}
+                            ${isStandardItem ? '<div class="standard-item-badge">STANDARD</div>' : ''}
+                            <div class="kiosk-selected-badge">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="kiosk-product-image">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="kiosk-product-name">${product.name}</div>
+                            <div class="kiosk-product-price">₱${parseFloat(product.price).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                            <div class="kiosk-product-stock ${isLowStock ? 'low-stock' : ''}">
+                                ${isOutOfStock ? 'Out of Stock' : `Stock: ${product.quantity}`}
+                            </div>
+                            <div class="kiosk-quantity-controls">
+                                <button type="button" class="kiosk-qty-btn kiosk-qty-minus" data-product-id="${product.id}">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" class="kiosk-qty-input" value="${quantity}" min="1" max="${product.quantity}" 
+                                       data-product-id="${product.id}">
+                                <button type="button" class="kiosk-qty-btn kiosk-qty-plus" data-product-id="${product.id}">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `);
+
+                    if (!isOutOfStock) {
+                        productCard.click(function(e) {
+                            if (!$(e.target).closest('.kiosk-quantity-controls').length && 
+                                !$(e.target).hasClass('kiosk-qty-btn') && 
+                                !$(e.target).closest('.kiosk-qty-btn').length) {
+                                toggleKioskProduct(product.id);
+                            }
+                        });
+                    }
+
+                    grid.append(productCard);
+                });
+
+                // Attach quantity control events (after all cards are appended)
+                $('.kiosk-qty-plus').off('click').on('click', function(e) {
+                    e.stopPropagation();
+                    const productId = $(this).data('product-id');
+                    updateKioskQuantity(productId, 1);
+                });
+
+                $('.kiosk-qty-minus').off('click').on('click', function(e) {
+                    e.stopPropagation();
+                    const productId = $(this).data('product-id');
+                    updateKioskQuantity(productId, -1);
+                });
+
+                $('.kiosk-qty-input').off('input blur').on('input blur', function(e) {
+                    const productId = $(this).data('product-id');
+                    let newQty = parseInt($(this).val());
+                    
+                    // Validate input
+                    if (isNaN(newQty) || newQty < 1) {
+                        newQty = 1;
+                        $(this).val(1);
+                    }
+                    
+                    setKioskQuantity(productId, newQty);
+                });
+            }
+
+            function toggleKioskProduct(productId) {
+                const product = products.find(p => p.id == productId);
+                if (!product || product.quantity <= 0) return;
+
+                if (kioskCart[productId]) {
+                    // Remove from cart
+                    delete kioskCart[productId];
+                } else {
+                    // Add to cart with quantity 1
+                    kioskCart[productId] = {
+                        product: product,
+                        quantity: 1
+                    };
+                }
+
+                renderKioskProducts();
+                updateKioskCart();
+            }
+
+            function updateKioskQuantity(productId, delta) {
+                if (!kioskCart[productId]) return;
+
+                const product = products.find(p => p.id == productId);
+                const newQuantity = kioskCart[productId].quantity + delta;
+
+                if (newQuantity <= 0) {
+                    delete kioskCart[productId];
+                    renderKioskProducts();
+                } else if (newQuantity <= product.quantity) {
+                    kioskCart[productId].quantity = newQuantity;
+                    // Update just the quantity display without re-rendering
+                    $(`.kiosk-qty-input[data-product-id="${productId}"]`).val(newQuantity);
+                } else {
+                    showNotification(`Maximum available quantity is ${product.quantity}`, 'warning');
+                    return;
+                }
+
+                updateKioskCart();
+            }
+
+            function setKioskQuantity(productId, quantity) {
+                if (!kioskCart[productId]) return;
+
+                const product = products.find(p => p.id == productId);
+                
+                if (quantity <= 0) {
+                    delete kioskCart[productId];
+                    renderKioskProducts();
+                } else if (quantity <= product.quantity) {
+                    kioskCart[productId].quantity = quantity;
+                    // Update just the quantity display without re-rendering
+                    $(`.kiosk-qty-input[data-product-id="${productId}"]`).val(quantity);
+                } else {
+                    showNotification(`Maximum available quantity is ${product.quantity}`, 'warning');
+                    kioskCart[productId].quantity = product.quantity;
+                    $(`.kiosk-qty-input[data-product-id="${productId}"]`).val(product.quantity);
+                }
+
+                updateKioskCart();
+            }
+
+            function updateKioskCart() {
+                const cartItems = $('#kioskCartItems');
+                const cartSummary = $('#kioskCartSummary');
+                
+                cartItems.empty();
+                
+                if (Object.keys(kioskCart).length === 0) {
+                    cartSummary.hide();
+                    $('#kioskTotalAmount').text('₱0.00');
+                    return;
+                }
+
+                cartSummary.show();
+                let total = 0;
+
+                Object.values(kioskCart).forEach(item => {
+                    const subtotal = item.quantity * parseFloat(item.product.price);
+                    total += subtotal;
+
+                    cartItems.append(`
+                        <div class="kiosk-cart-item">
+                            <span class="kiosk-cart-item-name">${item.product.name}</span>
+                            <span class="kiosk-cart-item-qty">x${item.quantity}</span>
+                            <span class="kiosk-cart-item-subtotal">₱${subtotal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                        </div>
+                    `);
+                });
+
+                $('#kioskTotalAmount').text(`₱${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`);
+            }
+
+            function filterKioskProducts(searchTerm) {
+                const term = searchTerm.toLowerCase();
+                $('.kiosk-product-card').each(function() {
+                    const productName = $(this).data('product-name');
+                    if (productName.includes(term)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
+
+            function resetKioskCart() {
+                kioskCart = {};
+                standardItemIds = [];
+                showAllProducts = false;
+                updateKioskCart();
+                renderKioskProducts();
+            }
+
+            function toggleShowAllProducts() {
+                showAllProducts = !showAllProducts;
+                
+                // Update button text
+                const btnText = $('#toggleBtnText');
+                if (showAllProducts) {
+                    btnText.text('Standard Only');
+                    showNotification('Showing all products', 'info');
+                } else {
+                    btnText.text('Show All');
+                    showNotification('Showing standard items only', 'info');
+                }
+                
+                renderKioskProducts();
+            }
+
+            // 🔧 Manual Add Functions
+            function openManualAddModal() {
+                const brandId = $('#orderBrand').val();
+                
+                if (!brandId) {
+                    showNotification('Please select a brand first', 'warning');
+                    return;
+                }
+
+                // Populate product dropdown with all products
+                const productSelect = $('#manualProductSelect');
+                productSelect.find('option:not(:first)').remove();
+                
+                products.forEach(product => {
+                    const inStock = product.quantity > 0;
+                    const stockText = inStock ? ` (Stock: ${product.quantity})` : ' (Out of Stock)';
+                    productSelect.append(
+                        `<option value="${product.id}" ${!inStock ? 'disabled' : ''}>
+                            ${product.name} - ₱${parseFloat(product.price).toLocaleString('en-US', {minimumFractionDigits: 2})}${stockText}
+                        </option>`
+                    );
+                });
+
+                // Reset form
+                $('#manualAddForm')[0].reset();
+                $('#manualPrice').val('');
+                $('#manualStockInfo').text('');
+                
+                $('#manualAddModal').modal('show');
+            }
+
+            function handleManualProductChange() {
+                const productId = $('#manualProductSelect').val();
+                const quantityInput = $('#manualQuantity');
+                const priceInput = $('#manualPrice');
+                const stockInfo = $('#manualStockInfo');
+
+                if (productId) {
+                    const product = products.find(p => p.id == productId);
+                    if (product) {
+                        priceInput.val(`₱${parseFloat(product.price).toLocaleString('en-US', {minimumFractionDigits: 2})}`);
+                        quantityInput.attr('max', product.quantity);
+                        stockInfo.text(`Available stock: ${product.quantity} units`);
+                        stockInfo.removeClass('text-danger').addClass('text-success');
+                        
+                        if (product.quantity <= 10) {
+                            stockInfo.removeClass('text-success').addClass('text-warning');
+                        }
+                    }
+                } else {
+                    priceInput.val('');
+                    quantityInput.removeAttr('max');
+                    stockInfo.text('');
+                }
+            }
+
+            function handleManualAdd(e) {
+                e.preventDefault();
+
+                const productId = $('#manualProductSelect').val();
+                const quantity = parseInt($('#manualQuantity').val());
+
+                if (!productId || !quantity || quantity <= 0) {
+                    showNotification('Please select a product and enter a valid quantity', 'error');
+                    return;
+                }
+
+                const product = products.find(p => p.id == productId);
+                
+                if (!product) {
+                    showNotification('Product not found', 'error');
+                    return;
+                }
+
+                if (quantity > product.quantity) {
+                    showNotification(`Only ${product.quantity} units available`, 'error');
+                    return;
+                }
+
+                // Add to kiosk cart
+                if (kioskCart[productId]) {
+                    // Update existing quantity
+                    const newQuantity = kioskCart[productId].quantity + quantity;
+                    if (newQuantity > product.quantity) {
+                        showNotification(`Cannot add ${quantity} more. Only ${product.quantity - kioskCart[productId].quantity} units available`, 'error');
+                        return;
+                    }
+                    kioskCart[productId].quantity = newQuantity;
+                } else {
+                    // Add new item
+                    kioskCart[productId] = {
+                        product: product,
+                        quantity: quantity
+                    };
+                }
+
+                renderKioskProducts();
+                updateKioskCart();
+                $('#manualAddModal').modal('hide');
+                showNotification(`${product.name} added to cart!`, 'success');
+            }
             // 🌐 API Helper Functions
             async function apiRequest(endpoint, options = {}) {
                 try {
@@ -735,16 +1449,15 @@
                 $('#refreshSummaryBtn').click(loadDashboardSummary);
                 $('#viewFullSummaryBtn').click(showFinalOrderSummary);
 
-                // Dynamic item management
-                $('#addItemBtn').click(addOrderItem);
-                $(document).on('click', '.remove-item', removeOrderItem);
-                $(document).on('input', '.item-quantity', calculateOrderTotal);
-                $(document).on('change', '.item-product', handleProductSelection);
+                // Kiosk search
+                $('#kioskSearchInput').on('input', function() {
+                    filterKioskProducts($(this).val());
+                });
 
-                // Mass delete functionality
-                $('#massDeleteBtn').click(handleMassDelete);
-                $(document).on('change', '.item-checkbox', toggleMassDeleteButton);
-                $('#selectAllItems').change(handleSelectAll);
+                // Manual Add
+                $('#manualAddBtn').click(openManualAddModal);
+                $('#manualAddForm').submit(handleManualAdd);
+                $('#manualProductSelect').change(handleManualProductChange);
 
                 // Brand/Branch cascading
                 $('#orderBrand').change(handleBrandChange);
@@ -786,8 +1499,8 @@
 
                 branchSelect.find('option:not(:first)').remove();
                 
-                // Clear existing items when brand changes
-                $('#orderItemsContainer').empty();
+                // Reset kiosk cart when brand changes
+                resetKioskCart();
 
                 if (brandId) {
                     try {
@@ -801,21 +1514,49 @@
                             branchSelect.append(`<option value="${branch.id}">${branch.name}</option>`);
                         });
 
-                        // Add standard items if they exist
+                        // Load standard items into kiosk cart
                         if (brandData.standard_items && brandData.standard_items.length > 0) {
-                            await addStandardItems(brandData.standard_items);
-                        } else {
-                            // Only add empty row if no standard items
-                            addOrderItem();
+                            await loadStandardItemsToKiosk(brandData.standard_items);
                         }
+
+                        // Render kiosk products
+                        renderKioskProducts();
                     } catch (error) {
                         console.error('Failed to load brand data:', error);
                         showNotification('Failed to load brand data', 'error');
                     }
                 } else {
-                    // Add empty row if no brand selected
-                    addOrderItem();
+                    // Show empty state
+                    renderKioskProducts();
                 }
+            }
+
+            async function loadStandardItemsToKiosk(standardItems) {
+                // Reset and store standard item IDs
+                standardItemIds = [];
+                
+                // standardItems is an array of product IDs like [1, 3, 5]
+                if (!Array.isArray(standardItems)) {
+                    console.warn('Standard items is not an array:', standardItems);
+                    return;
+                }
+                
+                standardItems.forEach(productId => {
+                    const product = products.find(p => p.id == productId);
+                    if (product) {
+                        standardItemIds.push(product.id);
+                        
+                        // Only add to cart if in stock
+                        if (product.quantity > 0) {
+                            kioskCart[product.id] = {
+                                product: product,
+                                quantity: 1 // Default quantity is 1
+                            };
+                        }
+                    }
+                });
+                
+                updateKioskCart();
             }
 
             function handleProductSelection(e) {
@@ -990,10 +1731,10 @@
 
                 if (orderId) {
                     const order = orders.find(o => o.id === orderId);
-                    $('#orderFormTitle').text('Edit Order');
+                    $('#orderFormTitle').html('<i class="fas fa-edit mr-2"></i>Edit Order');
                     populateOrderForm(order);
                 } else {
-                    $('#orderFormTitle').text('Add New Order');
+                    $('#orderFormTitle').html('<i class="fas fa-shopping-cart mr-2"></i>Add New Order');
                     resetOrderForm();
                 }
 
@@ -1005,70 +1746,30 @@
 
                 setTimeout(() => {
                     $('#orderBranch').val(order.branch_id);
+                    
+                    // Populate kiosk cart from order items
+                    kioskCart = {};
+                    order.items.forEach(item => {
+                        const product = products.find(p => p.name === item.name);
+                        if (product) {
+                            kioskCart[product.id] = {
+                                product: product,
+                                quantity: parseInt(item.quantity)
+                            };
+                        }
+                    });
+                    
+                    renderKioskProducts();
+                    updateKioskCart();
                 }, 500);
 
                 $('#orderNotes').val(order.notes);
-
-                // Clear existing items
-                $('#orderItemsContainer').empty();
-
-                // Add order items
-                order.items.forEach((item, index) => {
-                    addOrderItem();
-                    const lastRow = $('#orderItemsContainer .order-item-row').last();
-
-                    // Find product by name (since we store product name in order items)
-                    const product = products.find(p => p.name === item.name);
-                    if (product) {
-                        lastRow.find('.item-product').val(product.id);
-                    }
-
-                    lastRow.find('.item-quantity').val(item.quantity);
-                    lastRow.find('.item-price').val(item.price);
-                    calculateItemSubtotal(lastRow);
-                });
-
-                calculateOrderTotal();
             }
 
             function resetOrderForm() {
                 $('#orderForm')[0].reset();
                 $('#orderBranch').find('option:not(:first)').remove();
-
-                // Reset to single item row
-                $('#orderItemsContainer').html(`
-                <div class="order-item-row">
-                    <div class="row mb-2 align-items-center">
-                        <div class="col-md-auto px-2">
-                            <input type="checkbox" class="item-checkbox" style="width: 18px; height: 18px;">
-                        </div>
-                        <div class="col-md-4">
-                            <select class="form-control item-product" required>
-                                <option value="">Select Product</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <input type="number" class="form-control item-quantity" placeholder="Qty" min="1" required>
-                        </div>
-                        <div class="col-md-2">
-                            <input type="number" class="form-control item-price" placeholder="Price" step="0.01" min="0" readonly>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="text-right font-weight-bold item-subtotal">₱0.00</div>
-                        </div>
-                        <div class="col-md-1">
-                            <button type="button" class="btn btn-danger btn-sm remove-item" style="display: none;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `);
-
-                // Populate products in the new row
-                populateProductDropdowns();
-
-                $('#orderTotalAmount').text('₱0.00');
+                resetKioskCart();
             }
 
             function addOrderItem() {
@@ -1257,54 +1958,43 @@
                     return;
                 }
      
-                // Collect order items with inventory validation
+                // Collect order items from kiosk cart
                 const items = [];
                 let isValid = true;
      
-                $('.order-item-row').each(function() {
-                    const productId = $(this).find('.item-product').val();
-                    const quantityInput = $(this).find('.item-quantity');
-                    const quantity = parseFloat(quantityInput.val());
-                    const price = parseFloat($(this).find('.item-price').val());
-     
-                    if (!productId || !quantity || !price || quantity <= 0) {
+                // Convert kiosk cart to order items
+                Object.entries(kioskCart).forEach(([productId, cartItem]) => {
+                    const product = cartItem.product;
+                    const quantity = cartItem.quantity;
+                    
+                    if (!product || !quantity || quantity <= 0) {
                         isValid = false;
-                        showNotification('Please fill in all product details correctly', 'error');
-                        return false;
+                        return;
                     }
      
                     // Validate against inventory
-                    const product = products.find(p => p.id == productId);
-                    if (!product) {
-                        showNotification('Selected product not found in inventory', 'error');
-                        isValid = false;
-                        return false;
-                    }
-     
                     if (product.quantity === 0) {
-                        showNotification(`${product.name} is out of stock. Please select another product.`, 'error');
-                        quantityInput.val('');
+                        showNotification(`${product.name} is out of stock. Please remove it from your cart.`, 'error');
                         isValid = false;
-                        return false;
+                        return;
                     }
      
                     if (quantity > product.quantity) {
                         showNotification(`Cannot order ${quantity} units of ${product.name}. Only ${product.quantity} units available.`, 'error');
-                        quantityInput.val(product.quantity);
                         isValid = false;
-                        return false;
+                        return;
                     }
      
                     items.push({
                         name: product.name,
-                        quantity,
-                        price,
+                        quantity: quantity,
+                        price: parseFloat(product.price),
                         product_id: productId
                     });
                 });
 
                 if (!isValid || items.length === 0) {
-                    showNotification('Please select products and fill in all quantities', 'error');
+                    showNotification('Please select at least one product for your order', 'error');
                     return;
                 }
 
