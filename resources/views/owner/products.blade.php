@@ -335,7 +335,7 @@
                                 <label for="productPrice">Product Price <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text">$</span>
+                                        <span class="input-group-text">₱</span>
                                     </div>
                                     <input type="number" class="form-control" id="productPrice" step="0.01"
                                         min="0" required>
@@ -346,7 +346,7 @@
                                 <label for="productOriginalCost">Original Cost</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text">$</span>
+                                        <span class="input-group-text">₱</span>
                                     </div>
                                     <input type="number" class="form-control" id="productOriginalCost" step="0.01" min="0" placeholder="0.00">
                                 </div>
@@ -921,7 +921,7 @@
                     document.getElementById('modalTitle').textContent = 'Edit Product';
                     document.getElementById('productName').value = product.name;
                     document.getElementById('productPrice').value = product.price;
-                    document.getElementById('productOriginalCost').value = (product.original_cost !== undefined && product.original_cost !== null) ? Number(product.original_cost) : '';
+                    document.getElementById('productOriginalCost').value = (product.original_price !== undefined && product.original_price !== null) ? Number(product.original_price) : '';
                     document.getElementById('productQuantity').value = product.quantity;
                     document.getElementById('productPerishable').value = product.perishable;
                     document.getElementById('productExpirationDate').value = product.expiration_date || '';

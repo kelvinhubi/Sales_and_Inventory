@@ -23,7 +23,7 @@ class UpdateProductRequest extends FormRequest
                 Rule::unique('products', 'name')->ignore($this->product->id),
             ],
             'price' => 'required|numeric|min:0|max:999999.99',
-            'original_price' => 'nullable|numeric|min:0|max:999999.99',
+            'original_price' => 'required|numeric|min:0|max:999999.99',
             'quantity' => 'required|integer|min:0',
         ];
     }

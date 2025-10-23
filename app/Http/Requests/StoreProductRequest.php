@@ -16,7 +16,7 @@ class StoreProductRequest extends FormRequest
         return [
             'name' => 'required|string|max:255|unique:products,name',
             'price' => 'required|numeric|min:0|max:999999.99',
-            'original_price' => 'nullable|numeric|min:0|max:999999.99',
+            'original_price' => 'required|numeric|min:0|max:999999.99',
             'quantity' => 'required|integer|min:0',
             'perishable' => 'required|in:yes,no',
             'expiration_date' => 'nullable|date',
