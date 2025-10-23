@@ -186,6 +186,15 @@
               </a>
             </li>
 
+            <li class="nav-item">
+              <a href="{{ route('owner.suppliers') }}" class="nav-link {{ request()->routeIs('owner.suppliers') ? ' active' : '' }}">
+                <i class="nav-icon fas fa-truck"></i>
+                <p>
+                   Suppliers
+                </p>
+              </a>
+            </li>
+
 
 
           </ul>

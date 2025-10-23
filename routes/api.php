@@ -45,7 +45,7 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('orders/statistics', [OrderController::class, 'statistics']);
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('expenses', ExpenseController::class);
-
+    
     Route::get('branches', function () {
         return response()->json([
             'data' => \App\Models\Branch::with('brand')->get()->map(function ($branch) {
@@ -97,4 +97,9 @@ Route::middleware(['web', 'auth'])->prefix('ai')->group(function () {
     Route::get('/health-score', [AIInsightsController::class, 'getHealthScore']);
     Route::get('/daily-brief', [AIInsightsController::class, 'getDailyBrief']);
     Route::post('/clear-cache', [AIInsightsController::class, 'clearCache']);
+});
+
+// Supplier API routes - require authentication
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::apiResource('suppliers', App\Http\Controllers\SupplierController::class);
 });
