@@ -15,7 +15,7 @@ trait LogsActivity
         string $actionType,
         string $module,
         string $description,
-        array $details = null,
+        ?array $details = null,
         string $severity = 'low'
     ) {
         $user = Auth::user();
@@ -86,7 +86,7 @@ trait LogsActivity
     public static function logFailedLogin($email)
     {
         return ActivityLog::create([
-            'user_id' => 0,
+            'user_id' => null, // No authenticated user for failed login
             'user_name' => $email,
             'user_role' => 'unknown',
             'action_type' => 'failed_login',
@@ -129,7 +129,7 @@ trait LogsActivity
     public static function logPasswordReset($email)
     {
         return ActivityLog::create([
-            'user_id' => 0,
+            'user_id' => null, // No authenticated user for password reset request
             'user_name' => $email,
             'user_role' => 'unknown',
             'action_type' => 'password_reset',
