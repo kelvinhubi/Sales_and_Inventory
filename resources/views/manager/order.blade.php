@@ -1,4 +1,3 @@
-use data;
 @extends('manager.olayouts.main')
 
 @section('content')
