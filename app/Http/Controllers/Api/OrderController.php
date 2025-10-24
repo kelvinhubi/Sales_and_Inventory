@@ -97,6 +97,7 @@ class OrderController extends Controller
                         return [
                             'id' => $item->id,
                             'name' => $item->name, // Use 'name' field
+                            'category' => $item->category,
                             'quantity' => $item->quantity,
                             'price' => number_format($item->price, 2, '.', ''), // Use 'price' field
                             'product_id' => $item->product_id,
@@ -129,6 +130,7 @@ class OrderController extends Controller
             'branch_id' => 'required|exists:branches,id',
             'items' => 'required|array|min:1',
             'items.*.name' => 'required|string',
+            'items.*.category' => 'nullable|string',
             'items.*.quantity' => 'required|numeric|min:1',
             'items.*.price' => 'required|numeric|min:0',
             'items.*.product_id' => 'required|exists:products,id',
@@ -154,6 +156,7 @@ class OrderController extends Controller
                     'order_id' => $order->id,
                     'product_id' => $item['product_id'],
                     'name' => $item['name'], // Use 'name' instead of 'product_name'
+                    'category' => $item['category'] ?? null,
                     'quantity' => $item['quantity'],
                     'price' => $item['price'], // Use 'price' instead of 'unit_price'
                 ]);
@@ -215,6 +218,7 @@ class OrderController extends Controller
                         return [
                             'id' => $item->id,
                             'name' => $item->name, // Use 'name' field
+                            'category' => $item->category,
                             'quantity' => $item->quantity,
                             'price' => number_format($item->price, 2, '.', ''), // Use 'price' field
                             'product_id' => $item->product_id,
@@ -410,6 +414,7 @@ class OrderController extends Controller
                         return [
                             'product_id' => $item->product_id,
                             'name' => $item->name, // Use 'name' field
+                            'category' => $item->category,
                             'quantity' => $item->quantity,
                             'price' => number_format($item->price, 2, '.', ''), // Use 'price' field
                             'subtotal' => number_format($item->quantity * $item->price, 2, '.', ''),

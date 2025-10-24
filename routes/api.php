@@ -60,7 +60,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::get('productss', function () {
         return response()->json([
-            'data' => \App\Models\Product::all(['id', 'name','quantity', 'price']),
+            'data' => \App\Models\Product::all(['id', 'name', 'category', 'quantity', 'price']),
         ]);
     });
 });

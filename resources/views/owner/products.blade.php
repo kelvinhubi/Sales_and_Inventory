@@ -284,6 +284,7 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Product Name</th>
+                                        <th>Category</th>
                                         <th>Price</th>
                                         <th>Original Cost</th>
                                         <th>Unit Profit</th>
@@ -330,6 +331,15 @@
                                 <label for="productName">Product Name <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="productName" required>
                                 <div class="invalid-feedback">Please provide a valid product name.</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="productCategory">Category</label>
+                                <input type="text" class="form-control" id="productCategory" list="categoryList" 
+                                       placeholder="e.g., Beverages, Snacks, Groceries">
+                                <datalist id="categoryList">
+                                    <!-- Categories will be populated dynamically -->
+                                </datalist>
+                                <small class="form-text text-muted">Optional. Start typing or select from existing categories.</small>
                             </div>
                             <div class="form-group">
                                 <label for="productPrice">Product Price <span class="text-danger">*</span></label>
@@ -575,9 +585,31 @@
                     renderPagination();
                     updateStats();
                     updatePaginationInfo(response.from, response.to, response.total);
+                    populateCategorySuggestions(); // Populate category datalist
                 } else {
                     useSampleData(search, perishable, stock);
                 }
+            }
+
+            // Populate category suggestions from existing products
+            function populateCategorySuggestions() {
+                const categoryList = document.getElementById('categoryList');
+                const categories = new Set();
+                
+                // Get all unique categories from products
+                products.forEach(product => {
+                    if (product.category && product.category.trim()) {
+                        categories.add(product.category.trim());
+                    }
+                });
+                
+                // Clear and populate datalist
+                categoryList.innerHTML = '';
+                Array.from(categories).sort().forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    categoryList.appendChild(option);
+                });
             }
 
             // Fallback to sample data
@@ -723,11 +755,13 @@
                     // Use original_price from API response and calculate profit
                     const originalCost = product.original_price ? Number(product.original_price) : 0;
                     const unitProfit = Number(product.price) - originalCost;
+                    const category = product.category || '<span class="text-muted">-</span>';
                     
                     return `
                    <tr>
                        <td><strong>#${product.id}</strong></td>
                        <td>${product.name}</td>
+                       <td>${category}</td>
                        <td><span class="product-price">₱${parseFloat(product.price).toFixed(2)}</span></td>
                        <td>₱${originalCost.toFixed(2)}</td>
                        <td>${unitProfit >= 0 ? '<span class="text-success">' : '<span class="text-danger">'}₱${unitProfit.toFixed(2)}</span></td>
@@ -920,6 +954,7 @@
                 if (product) {
                     document.getElementById('modalTitle').textContent = 'Edit Product';
                     document.getElementById('productName').value = product.name;
+                    document.getElementById('productCategory').value = product.category || '';
                     document.getElementById('productPrice').value = product.price;
                     document.getElementById('productOriginalCost').value = (product.original_price !== undefined && product.original_price !== null) ? Number(product.original_price) : '';
                     document.getElementById('productQuantity').value = product.quantity;
@@ -961,6 +996,7 @@
 
                 const productData = {
                     name: document.getElementById('productName').value.trim(),
+                    category: document.getElementById('productCategory').value.trim() || null,
                     price: parseFloat(document.getElementById('productPrice').value),
                     ...(document.getElementById('productOriginalCost').value !== '' && {
                         original_price: parseFloat(document.getElementById('productOriginalCost').value)

@@ -33,6 +33,11 @@ class ProductController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
+        // Filter by category
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
         // Filter by perishable status
         if ($request->filled('perishable')) {
             $query->perishable($request->perishable);

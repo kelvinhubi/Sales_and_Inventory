@@ -22,6 +22,7 @@ class UpdateProductRequest extends FormRequest
                 'max:255',
                 Rule::unique('products', 'name')->ignore($this->product->id),
             ],
+            'category' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0|max:999999.99',
             'original_price' => 'required|numeric|min:0|max:999999.99',
             'quantity' => 'required|integer|min:0',
@@ -33,6 +34,7 @@ class UpdateProductRequest extends FormRequest
         return [
             'name.required' => 'Product name is required.',
             'name.unique' => 'A product with this name already exists.',
+            'category.string' => 'Category must be a valid text.',
             'price.required' => 'Product price is required.',
             'price.numeric' => 'Price must be a valid number.',
             'price.min' => 'Price cannot be negative.',

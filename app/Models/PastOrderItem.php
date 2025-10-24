@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class PastOrderItem extends Model
 {
     use HasFactory;
-    protected $fillable = ['past_order_id', 'product_id', 'quantity', 'price'];
+    protected $fillable = ['past_order_id', 'product_id', 'name', 'category', 'quantity', 'price'];
 
     public function product()
     {

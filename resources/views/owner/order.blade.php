@@ -730,12 +730,17 @@ use data;
 
                             <!-- Search Box -->
                             <div class="kiosk-search-box">
-                                <div class="row align-items-center">
-                                    <div class="col-md-6">
+                                <div class="row align-items-center mb-2">
+                                    <div class="col-md-4">
                                         <input type="text" class="kiosk-search-input" id="kioskSearchInput" 
                                                placeholder="🔍 Search products...">
                                     </div>
                                     <div class="col-md-3">
+                                        <select class="form-control form-control-lg" id="categoryFilter">
+                                            <option value="">All Categories</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
                                         <button type="button" class="btn btn-info btn-lg btn-block" id="toggleProductsBtn" onclick="toggleShowAllProducts()">
                                             <i class="fas fa-filter mr-2"></i><span id="toggleBtnText">Show All</span>
                                         </button>
@@ -933,11 +938,13 @@ use data;
                     const isSelected = kioskCart[product.id];
                     const quantity = isSelected ? kioskCart[product.id].quantity : 0;
                     const isStandardItem = standardItemIds.includes(product.id);
+                    const category = product.category || 'Uncategorized';
 
                     const productCard = $(`
                         <div class="kiosk-product-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'out-of-stock' : ''} ${isStandardItem ? 'standard-item' : ''}" 
                              data-product-id="${product.id}"
-                             data-product-name="${product.name.toLowerCase()}">
+                             data-product-name="${product.name.toLowerCase()}"
+                             data-category="${category.toLowerCase()}">
                             ${isOutOfStock ? '<div class="out-of-stock-badge">OUT OF STOCK</div>' : ''}
                             ${isStandardItem ? '<div class="standard-item-badge">STANDARD</div>' : ''}
                             <div class="kiosk-selected-badge">
@@ -947,6 +954,9 @@ use data;
                                 <i class="fas fa-box"></i>
                             </div>
                             <div class="kiosk-product-name">${product.name}</div>
+                            <div class="kiosk-product-category" style="font-size: 0.75rem; color: #6c757d; margin-bottom: 5px;">
+                                <i class="fas fa-tag"></i> ${category}
+                            </div>
                             <div class="kiosk-product-price">₱${parseFloat(product.price).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
                             <div class="kiosk-product-stock ${isLowStock ? 'low-stock' : ''}">
                                 ${isOutOfStock ? 'Out of Stock' : `Stock: ${product.quantity}`}
@@ -1096,11 +1106,18 @@ use data;
                 $('#kioskTotalAmount').text(`₱${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`);
             }
 
-            function filterKioskProducts(searchTerm) {
-                const term = searchTerm.toLowerCase();
+            function filterKioskProducts() {
+                const searchTerm = $('#kioskSearchInput').val().toLowerCase();
+                const selectedCategory = $('#categoryFilter').val().toLowerCase();
+                
                 $('.kiosk-product-card').each(function() {
                     const productName = $(this).data('product-name');
-                    if (productName.includes(term)) {
+                    const productCategory = $(this).data('category');
+                    
+                    const matchesSearch = !searchTerm || productName.includes(searchTerm);
+                    const matchesCategory = !selectedCategory || productCategory === selectedCategory;
+                    
+                    if (matchesSearch && matchesCategory) {
                         $(this).show();
                     } else {
                         $(this).hide();
@@ -1108,10 +1125,38 @@ use data;
                 });
             }
 
+            function populateCategoryFilter() {
+                const categoryFilter = $('#categoryFilter');
+                const categories = new Set();
+                
+                console.log('Populating category filter. Products count:', products.length);
+                
+                products.forEach(product => {
+                    console.log('Product:', product.name, 'Category:', product.category);
+                    if (product.category) {
+                        categories.add(product.category);
+                    }
+                });
+                
+                console.log('Unique categories found:', Array.from(categories));
+                
+                // Clear existing options except "All Categories"
+                categoryFilter.find('option:not(:first)').remove();
+                
+                // Add categories
+                Array.from(categories).sort().forEach(category => {
+                    categoryFilter.append(`<option value="${category}">${category}</option>`);
+                });
+                
+                console.log('Category filter populated with', categories.size, 'categories');
+            }
+
             function resetKioskCart() {
                 kioskCart = {};
                 standardItemIds = [];
                 showAllProducts = false;
+                $('#categoryFilter').val('');
+                $('#kioskSearchInput').val('');
                 updateKioskCart();
                 renderKioskProducts();
             }
@@ -1424,6 +1469,7 @@ use data;
                     ]);
 
                     populateFilters();
+                    populateCategoryFilter(); // Populate category filter with all available categories
                     renderOrders();
                     await loadDashboardSummary(); // Load dashboard summary automatically
                     showNotification('Data loaded successfully!');
@@ -1449,10 +1495,9 @@ use data;
                 $('#refreshSummaryBtn').click(loadDashboardSummary);
                 $('#viewFullSummaryBtn').click(showFinalOrderSummary);
 
-                // Kiosk search
-                $('#kioskSearchInput').on('input', function() {
-                    filterKioskProducts($(this).val());
-                });
+                // Kiosk search and filter
+                $('#kioskSearchInput').on('input', filterKioskProducts);
+                $('#categoryFilter').on('change', filterKioskProducts);
 
                 // Manual Add
                 $('#manualAddBtn').click(openManualAddModal);
@@ -1518,6 +1563,9 @@ use data;
                         if (brandData.standard_items && brandData.standard_items.length > 0) {
                             await loadStandardItemsToKiosk(brandData.standard_items);
                         }
+
+                        // Populate category filter
+                        populateCategoryFilter();
 
                         // Render kiosk products
                         renderKioskProducts();
@@ -1987,6 +2035,7 @@ use data;
      
                     items.push({
                         name: product.name,
+                        category: product.category || null,
                         quantity: quantity,
                         price: parseFloat(product.price),
                         product_id: productId
