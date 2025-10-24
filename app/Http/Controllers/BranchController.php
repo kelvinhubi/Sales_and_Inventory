@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Brand;
+use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BranchController extends Controller
 {
+    use LogsActivity;
     /**
      * Get all branches for a specific brand
      */
@@ -59,6 +61,20 @@ class BranchController extends Controller
 
         $branch = $brand->branches()->create($validated);
 
+        // Log branch creation
+        self::logActivity(
+            'create',
+            'branches',
+            "Created branch: {$branch->name} for brand: {$brand->name}",
+            [
+                'branch_id' => $branch->id,
+                'branch_name' => $branch->name,
+                'brand_id' => $brand->id,
+                'brand_name' => $brand->name
+            ],
+            'medium'
+        );
+
         return response()->json($branch, 201);
     }
 
@@ -96,7 +112,22 @@ class BranchController extends Controller
             'status' => 'sometimes|string|in:active,inactive',
         ]);
 
+        $oldName = $branch->name;
         $branch->update($validated);
+
+        // Log branch update
+        self::logActivity(
+            'update',
+            'branches',
+            "Updated branch: {$oldName}" . ($oldName !== $branch->name ? " to {$branch->name}" : "") . " for brand: {$brand->name}",
+            [
+                'branch_id' => $branch->id,
+                'old_name' => $oldName,
+                'new_name' => $branch->name,
+                'brand_name' => $brand->name
+            ],
+            'medium'
+        );
 
         return response()->json($branch);
     }
@@ -111,7 +142,24 @@ class BranchController extends Controller
             return response()->json(['error' => 'Branch not found for this brand'], 404);
         }
 
+        $branchName = $branch->name;
+        $branchId = $branch->id;
+        $brandName = $brand->name;
+        
         $branch->delete();
+
+        // Log branch deletion (high severity)
+        self::logActivity(
+            'delete',
+            'branches',
+            "Deleted branch: {$branchName} from brand: {$brandName}",
+            [
+                'branch_id' => $branchId,
+                'branch_name' => $branchName,
+                'brand_name' => $brandName
+            ],
+            'high'
+        );
 
         return response()->json([
             'message' => 'Branch deleted successfully',

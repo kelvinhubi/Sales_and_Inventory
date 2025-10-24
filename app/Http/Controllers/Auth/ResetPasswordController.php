@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -11,6 +12,7 @@ use Illuminate\Support\Str;
 
 class ResetPasswordController extends Controller
 {
+    use LogsActivity;
     /*
     |--------------------------------------------------------------------------
     | Password Reset Controller
@@ -123,6 +125,15 @@ class ResetPasswordController extends Controller
         $user->password = Hash::make($password);
         $user->setRememberToken(Str::random(60));
         $user->save();
+
+        // Log the password reset completion
+        self::logActivity(
+            'password_reset',
+            'authentication',
+            "Password reset completed for user: {$user->name}",
+            ['user_id' => $user->id, 'email' => $user->email],
+            'medium'
+        );
 
         auth()->login($user);
     }

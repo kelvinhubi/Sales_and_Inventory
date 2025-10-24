@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 
 class ForgotPasswordController extends Controller
 {
+    use LogsActivity;
     /*
     |--------------------------------------------------------------------------
     | Password Reset Controller
@@ -46,6 +48,11 @@ class ForgotPasswordController extends Controller
         $response = $this->broker()->sendResetLink(
             $request->only('email')
         );
+
+        // Log the password reset request
+        if ($response == Password::RESET_LINK_SENT) {
+            self::logPasswordReset($request->email);
+        }
 
         return $response == Password::RESET_LINK_SENT
                     ? $this->sendResetLinkResponse($request, $response)

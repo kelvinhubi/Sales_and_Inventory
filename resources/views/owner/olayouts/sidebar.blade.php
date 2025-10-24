@@ -195,7 +195,15 @@
               </a>
             </li>
 
-
+            {{--Logs--}}
+            <li class="nav-item">
+              <a href="{{ route('owner.logs') }}" class="nav-link {{ request()->routeIs('owner.logs') ? ' active' : '' }}">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>
+                   System Logs
+                </p>
+              </a>
+            </li>
 
           </ul>
         </nav>

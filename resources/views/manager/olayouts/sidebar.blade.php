@@ -205,6 +205,16 @@
               </a>
             </li>
 
+            {{--Logs--}}
+            <li class="nav-item">
+              <a href="{{ route('manager.logs') }}" class="nav-link {{ request()->routeIs('manager.logs') ? ' active' : '' }}">
+                <i class="nav-icon fas fa-file-alt"></i>
+                <p>
+                   System Logs
+                </p>
+              </a>
+            </li>
+
 
 
 

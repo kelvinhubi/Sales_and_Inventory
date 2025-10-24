@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Traits\LogsActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,7 @@ use Session;
 
 class MainController extends Controller
 {
+    use LogsActivity;
     public function owner(): View|RedirectResponse
     {
         if (! $this->AuthenticateUser()) {
@@ -64,6 +66,10 @@ class MainController extends Controller
         $userlog = Auth::user();
         $userlog->password = bcrypt($request->password);
         $userlog->save();
+        
+        // Log the password change
+        self::logPasswordChange();
+        
         Session::flush();
         Auth::logout();
 
@@ -79,6 +85,10 @@ class MainController extends Controller
         $userlog = Auth::user();
         $userlog->password = bcrypt($request->password);
         $userlog->save();
+        
+        // Log the password change
+        self::logPasswordChange();
+        
         Session::flush();
         Auth::logout();
 

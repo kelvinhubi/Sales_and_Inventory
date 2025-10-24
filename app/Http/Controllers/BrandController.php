@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Brand;
+use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,7 @@ use Illuminate\View\View;
 
 class BrandController extends Controller
 {
+    use LogsActivity;
     public function showView(): View
     {
         if (! Auth::check()) {
@@ -71,6 +73,18 @@ class BrandController extends Controller
         $brand = Brand::create($validated);
         $brand->load('branches');
 
+        // Log brand creation
+        self::logActivity(
+            'create',
+            'brands',
+            "Created brand: {$brand->name}",
+            [
+                'brand_id' => $brand->id,
+                'name' => $brand->name
+            ],
+            'medium'
+        );
+
         return response()->json($brand, 201);
     }
 
@@ -95,8 +109,22 @@ class BrandController extends Controller
             'standard_items' => 'nullable|array',
         ]);
 
+        $oldName = $brand->name;
         $brand->update($validated);
         $brand->load('branches');
+
+        // Log brand update
+        self::logActivity(
+            'update',
+            'brands',
+            "Updated brand: {$oldName}" . ($oldName !== $brand->name ? " to {$brand->name}" : ""),
+            [
+                'brand_id' => $brand->id,
+                'old_name' => $oldName,
+                'new_name' => $brand->name
+            ],
+            'medium'
+        );
 
         return response()->json($brand);
     }
@@ -106,7 +134,24 @@ class BrandController extends Controller
      */
     public function destroy(Brand $brand): JsonResponse
     {
+        $brandName = $brand->name;
+        $brandId = $brand->id;
+        $branchesCount = $brand->branches()->count();
+        
         $brand->delete(); // This will also delete branches due to cascade
+
+        // Log brand deletion (high severity due to cascade delete)
+        self::logActivity(
+            'delete',
+            'brands',
+            "Deleted brand: {$brandName} (including {$branchesCount} branches)",
+            [
+                'brand_id' => $brandId,
+                'brand_name' => $brandName,
+                'branches_deleted' => $branchesCount
+            ],
+            'high'
+        );
 
         return response()->json([
             'message' => 'Brand and all its branches deleted successfully',

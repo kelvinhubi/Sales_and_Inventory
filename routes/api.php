@@ -103,3 +103,11 @@ Route::middleware(['web', 'auth'])->prefix('ai')->group(function () {
 Route::middleware(['web', 'auth'])->group(function () {
     Route::apiResource('suppliers', App\Http\Controllers\SupplierController::class);
 });
+
+// Activity Logs API routes - require authentication
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('activity-logs/statistics', [App\Http\Controllers\Api\ActivityLogController::class, 'statistics']);
+    Route::get('activity-logs/my-logs', [App\Http\Controllers\Api\ActivityLogController::class, 'myLogs']);
+    Route::get('activity-logs/export', [App\Http\Controllers\Api\ActivityLogController::class, 'export']);
+    Route::get('activity-logs', [App\Http\Controllers\Api\ActivityLogController::class, 'index']);
+});

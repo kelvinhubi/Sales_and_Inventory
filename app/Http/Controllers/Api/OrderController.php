@@ -10,6 +10,7 @@ use App\Models\OrderItem;
 use App\Models\PastOrder;
 use App\Models\PastOrderItem;
 use App\Models\Product;
+use App\Traits\LogsActivity;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,7 @@ use Illuminate\View\View;
 
 class OrderController extends Controller
 {
+    use LogsActivity;
     public function showView(): View
     {
         if (! Auth::check()) {
@@ -167,6 +169,21 @@ class OrderController extends Controller
             // Load relationships for response
             $order->load(['brand', 'branch', 'items']);
 
+            // Log order creation
+            self::logActivity(
+                'create',
+                'orders',
+                "Created order for {$order->brand->name} - {$order->branch->name}",
+                [
+                    'order_id' => $order->id,
+                    'brand_name' => $order->brand->name,
+                    'branch_name' => $order->branch->name,
+                    'total_amount' => $order->total_amount,
+                    'items_count' => count($validatedData['items'])
+                ],
+                'medium'
+            );
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -286,6 +303,21 @@ class OrderController extends Controller
             // Load relationships for response
             $order->load(['brand', 'branch', 'items']);
 
+            // Log order update
+            self::logActivity(
+                'update',
+                'orders',
+                "Updated order for {$order->brand->name} - {$order->branch->name}",
+                [
+                    'order_id' => $order->id,
+                    'brand_name' => $order->brand->name,
+                    'branch_name' => $order->branch->name,
+                    'total_amount' => $order->total_amount,
+                    'items_count' => count($validatedData['items'])
+                ],
+                'medium'
+            );
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -323,6 +355,10 @@ class OrderController extends Controller
                 ->where('user_id', Auth::id()) // Ensure user owns this order
                 ->firstOrFail();
 
+            $brandName = $order->brand->name ?? 'Unknown';
+            $branchName = $order->branch->name ?? 'Unknown';
+            $totalAmount = $order->total_amount;
+
             // Delete order items first (due to foreign key constraints)
             $order->items()->delete();
 
@@ -330,6 +366,20 @@ class OrderController extends Controller
             $order->delete();
 
             DB::commit();
+
+            // Log order deletion (high severity)
+            self::logActivity(
+                'delete',
+                'orders',
+                "Deleted order for {$brandName} - {$branchName}",
+                [
+                    'order_id' => $id,
+                    'brand_name' => $brandName,
+                    'branch_name' => $branchName,
+                    'total_amount' => $totalAmount
+                ],
+                'high'
+            );
 
             return response()->json([
                 'success' => true,

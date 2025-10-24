@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
+use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    use LogsActivity;
     /**
      * Display a listing of products with search and filters
      */
@@ -76,6 +78,21 @@ class ProductController extends Controller
 
         $product = Product::create($validatedData);
 
+        // Log product creation
+        self::logActivity(
+            'create',
+            'products',
+            "Created product: {$product->name}",
+            [
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'category' => $product->category,
+                'quantity' => $product->quantity,
+                'price' => $product->price
+            ],
+            'medium'
+        );
+
         return response()->json([
             'message' => 'Product created successfully',
             'data' => $product,
@@ -104,8 +121,27 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product): JsonResponse
     {
         $validatedData = $request->validated();
+        
+        $oldData = [
+            'name' => $product->name,
+            'quantity' => $product->quantity,
+            'price' => $product->price
+        ];
 
         $product->update($validatedData);
+
+        // Log product update
+        self::logActivity(
+            'update',
+            'products',
+            "Updated product: {$product->name}",
+            [
+                'product_id' => $product->id,
+                'old_data' => $oldData,
+                'new_data' => $validatedData
+            ],
+            'medium'
+        );
 
         return response()->json([
             'message' => 'Product updated successfully',
@@ -118,7 +154,22 @@ class ProductController extends Controller
      */
     public function destroy(Product $product): JsonResponse
     {
+        $productName = $product->name;
+        $productId = $product->id;
+        
         $product->delete();
+
+        // Log product deletion (high severity)
+        self::logActivity(
+            'delete',
+            'products',
+            "Deleted product: {$productName}",
+            [
+                'product_id' => $productId,
+                'product_name' => $productName
+            ],
+            'high'
+        );
 
         return response()->json([
             'message' => 'Product deleted successfully',

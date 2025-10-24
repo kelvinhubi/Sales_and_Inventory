@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Traits\LogsActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,7 @@ use Session;
 
 class login extends Controller
 {
+    use LogsActivity;
     public function showForm(): View
     {
         return View('index');
@@ -34,6 +36,9 @@ class login extends Controller
                 'last_activity' => now(),
             ]);
 
+            // Log successful login
+            self::logLogin($user->id, $user->name, $user->Role);
+
             // Role-based redirection (case-insensitive)
             $role = strtolower($user->Role ?? '');
 
@@ -45,10 +50,16 @@ class login extends Controller
             };
         }
 
+        // Log failed login attempt
+        self::logFailedLogin($request->email);
+
         return back()->withInput()->with('status', 'Invalid Credentials or User not Found');
     }
     public function logout(): RedirectResponse
     {
+        // Log logout before clearing session
+        self::logLogout();
+
         // Mark user as offline before logging out
         if (Auth::check()) {
             Auth::user()->update([

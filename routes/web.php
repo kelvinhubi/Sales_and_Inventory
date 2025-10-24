@@ -218,6 +218,11 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('suppliers', [App\Http\Controllers\SupplierController::class, 'showView'])->name('suppliers');
     Route::get('api/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->name('api.suppliers');
 
+    // Activity Logs (Owner - can view all logs)
+    Route::get('logs', function () {
+        return view('owner.logs');
+    })->name('logs');
+
 });
 
 /*
@@ -253,6 +258,12 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
 
     // Expenses
     Route::get('expenses', [ManagerExpenseController::class, 'showView'])->name('expenses');
+
+    // Activity Logs (Manager - can view only their own logs)
+    Route::get('logs', function () {
+        return view('manager.logs');
+    })->name('logs');
+
     //Suppliers
     Route::get('suppliers', [App\Http\Controllers\SupplierController::class, 'showView2'])->name('suppliers');
     Route::get('api/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->name('api.suppliers');

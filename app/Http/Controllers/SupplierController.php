@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Supplier;
+use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,7 @@ use Illuminate\View\View;
 
 class SupplierController extends Controller
 {
+    use LogsActivity;
     public function showView(): View
     {
         if (! Auth::check()) {
@@ -86,6 +88,19 @@ class SupplierController extends Controller
 
         $supplier = Supplier::create($validated);
 
+        // Log supplier creation
+        self::logActivity(
+            'create',
+            'suppliers',
+            "Created supplier: {$supplier->name}",
+            [
+                'supplier_id' => $supplier->id,
+                'name' => $supplier->name,
+                'company' => $supplier->company
+            ],
+            'medium'
+        );
+
         return response()->json($supplier, 201);
     }
 
@@ -113,7 +128,21 @@ class SupplierController extends Controller
             'status' => 'nullable|in:active,inactive',
         ]);
 
+        $oldName = $supplier->name;
         $supplier->update($validated);
+
+        // Log supplier update
+        self::logActivity(
+            'update',
+            'suppliers',
+            "Updated supplier: {$oldName}" . ($oldName !== $supplier->name ? " to {$supplier->name}" : ""),
+            [
+                'supplier_id' => $supplier->id,
+                'old_name' => $oldName,
+                'new_name' => $supplier->name
+            ],
+            'medium'
+        );
 
         return response()->json($supplier);
     }
@@ -123,7 +152,22 @@ class SupplierController extends Controller
      */
     public function destroy(Supplier $supplier): JsonResponse
     {
+        $supplierName = $supplier->name;
+        $supplierId = $supplier->id;
+        
         $supplier->delete();
+
+        // Log supplier deletion (high severity)
+        self::logActivity(
+            'delete',
+            'suppliers',
+            "Deleted supplier: {$supplierName}",
+            [
+                'supplier_id' => $supplierId,
+                'supplier_name' => $supplierName
+            ],
+            'high'
+        );
 
         return response()->json(['message' => 'Supplier deleted successfully']);
     }

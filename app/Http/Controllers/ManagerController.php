@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ManagerController extends Controller
 {
+    use LogsActivity;
     public function showView()
     {
         if (! Auth::check()) {
@@ -60,6 +62,19 @@ class ManagerController extends Controller
             'last_activity' => now(),
         ]);
 
+        // Log manager creation (critical - user management)
+        self::logActivity(
+            'create',
+            'users',
+            "Created manager account: {$user->name}",
+            [
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email
+            ],
+            'critical'
+        );
+
         return response()->json($user, 201);
     }
 
@@ -78,18 +93,53 @@ class ManagerController extends Controller
         }
 
         $data = $request->only(['name', 'email', 'phone', 'notes']);
+        $passwordChanged = false;
+        
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
+            $passwordChanged = true;
         }
 
+        $oldName = $manager->name;
         $manager->update($data);
+
+        // Log manager update (critical - user management)
+        self::logActivity(
+            'update',
+            'users',
+            "Updated manager account: {$oldName}" . ($passwordChanged ? " (password changed)" : ""),
+            [
+                'user_id' => $manager->id,
+                'old_name' => $oldName,
+                'new_name' => $manager->name,
+                'password_changed' => $passwordChanged
+            ],
+            'critical'
+        );
 
         return response()->json($manager);
     }
 
     public function destroy(User $manager)
     {
+        $managerName = $manager->name;
+        $managerId = $manager->id;
+        $managerEmail = $manager->email;
+        
         $manager->delete();
+
+        // Log manager deletion (critical - user management)
+        self::logActivity(
+            'delete',
+            'users',
+            "Deleted manager account: {$managerName}",
+            [
+                'user_id' => $managerId,
+                'name' => $managerName,
+                'email' => $managerEmail
+            ],
+            'critical'
+        );
 
         return response()->json(null, 200);
     }
