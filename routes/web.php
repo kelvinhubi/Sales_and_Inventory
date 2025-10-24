@@ -254,6 +254,6 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
     // Expenses
     Route::get('expenses', [ManagerExpenseController::class, 'showView'])->name('expenses');
     //Suppliers
-    Route::get('suppliers', [App\Http\Controllers\SupplierController::class, 'showView'])->name('suppliers');
+    Route::get('suppliers', [App\Http\Controllers\SupplierController::class, 'showView2'])->name('suppliers');
     Route::get('api/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->name('api.suppliers');
 });

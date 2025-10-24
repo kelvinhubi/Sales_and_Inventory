@@ -18,6 +18,14 @@ class SupplierController extends Controller
 
         return view('owner.suppliers');
     }
+    public function showView2(): View
+    {
+        if (! Auth::check()) {
+            return redirect()->route('Login');
+        }
+
+        return view('manager.suppliers');
+    }
 
     /**
      * Get all suppliers
