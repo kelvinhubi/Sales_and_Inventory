@@ -7,11 +7,13 @@ use App\Models\Branch;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Models\RejectedGood;
+use App\Traits\LogsActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RejectedGoodsController extends Controller
 {
+    use LogsActivity;
     public function index()
     {
         if (! Auth::check()) {
@@ -50,8 +52,19 @@ class RejectedGoodsController extends Controller
             'dr_no' => 'required|unique:rejected_goods',
             'amount' => 'required|numeric|min:0',
             'reason' => 'required|string',
+            'product_items' => 'required|array|min:1',
             'product_items.*.product_id' => 'required|exists:products,id',
             'product_items.*.quantity' => 'required|integer|min:1',
+        ], [
+            'brand_id.required' => 'Please select a DR Number to populate brand information.',
+            'branch_id.required' => 'Please select a DR Number to populate branch information.',
+            'dr_no.required' => 'DR Number is required.',
+            'dr_no.unique' => 'This DR Number has already been used for a rejected goods record.',
+            'product_items.required' => 'Please add at least one product item.',
+            'product_items.min' => 'Please add at least one product item.',
+            'product_items.*.product_id.required' => 'Please select a product for each item.',
+            'product_items.*.quantity.required' => 'Please enter a quantity for each item.',
+            'product_items.*.quantity.min' => 'Quantity must be at least 1.',
         ]);
 
         $rejectedGood = RejectedGood::create($validated);
@@ -59,6 +72,20 @@ class RejectedGoodsController extends Controller
         foreach ($validated['product_items'] as $item) {
             $rejectedGood->items()->create($item);
         }
+
+        // Log rejected goods creation
+        self::logActivity(
+            'create',
+            'rejected_goods',
+            "Created rejected goods record - DR No: {$rejectedGood->dr_no}",
+            [
+                'rejected_good_id' => $rejectedGood->id,
+                'dr_no' => $rejectedGood->dr_no,
+                'amount' => $rejectedGood->amount,
+                'items_count' => count($validated['product_items'])
+            ],
+            'medium'
+        );
 
         return redirect()->route('manager.rejected-goods.index')->with('success', 'Rejected good created successfully.');
     }
@@ -108,13 +135,42 @@ class RejectedGoodsController extends Controller
             $rejectedGood->items()->create($item);
         }
 
+        // Log rejected goods update
+        self::logActivity(
+            'update',
+            'rejected_goods',
+            "Updated rejected goods record - DR No: {$rejectedGood->dr_no}",
+            [
+                'rejected_good_id' => $rejectedGood->id,
+                'dr_no' => $rejectedGood->dr_no,
+                'amount' => $rejectedGood->amount
+            ],
+            'medium'
+        );
+
         return redirect()->route('manager.rejected-goods.index')->with('success', 'Rejected good updated successfully.');
     }
 
     public function destroy(RejectedGood $rejectedGood)
     {
         $this->authorize('delete', $rejectedGood);
+        
+        $drNo = $rejectedGood->dr_no;
+        $rejectedGoodId = $rejectedGood->id;
+        
         $rejectedGood->delete();
+
+        // Log rejected goods deletion
+        self::logActivity(
+            'delete',
+            'rejected_goods',
+            "Deleted rejected goods record - DR No: {$drNo}",
+            [
+                'rejected_good_id' => $rejectedGoodId,
+                'dr_no' => $drNo
+            ],
+            'high'
+        );
 
         return redirect()->route('manager.rejected-goods.index')->with('success', 'Rejected good deleted successfully.');
     }

@@ -71,6 +71,21 @@
                                 </div>
                                 <form method="POST" action="{{ route('manager.rejected-goods.store') }}" id="rejected-goods-form">
                                     @csrf
+                                    
+                                    @if ($errors->any())
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                            <h5><i class="icon fas fa-ban"></i> Validation Errors!</h5>
+                                            <ul class="mb-0">
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                    @endif
+                                    
                                     <div class="card-body">
                                         <!-- DR Number Selection - Top Priority -->
                                         <div class="row">
@@ -154,12 +169,18 @@
                                         <div class="form-group">
                                             <label>Product Items <span class="text-danger">*</span></label>
                                             <div id="items-container">
-                                                <!-- Dynamic rows will be added here -->
+                                                <!-- Initial row will be added by JavaScript on page load -->
                                             </div>
                                             <button type="button" class="btn btn-secondary mt-2" onclick="addItemRow()">
                                                 <i class="fas fa-plus mr-2"></i>Add Item
                                             </button>
                                             @error('product_items')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                            @error('product_items.0.product_id')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                            @error('product_items.0.quantity')
                                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                                             @enderror
                                         </div>
@@ -391,6 +412,52 @@
         document.getElementById('amount').value = total.toFixed(2);
     }
 
+    // Form submission validation
+    document.getElementById('rejected-goods-form').addEventListener('submit', function(e) {
+        const brandId = document.getElementById('brand_id').value;
+        const branchId = document.getElementById('branch_id').value;
+        const drNo = document.getElementById('dr_no').value;
+        const itemRows = document.querySelectorAll('.form-row.mb-3');
+        
+        if (!drNo) {
+            e.preventDefault();
+            alert('Please select a DR Number');
+            document.getElementById('dr_no').focus();
+            return false;
+        }
+        
+        if (!brandId || !branchId) {
+            e.preventDefault();
+            alert('Please wait for brand and branch information to load after selecting a DR Number');
+            return false;
+        }
+        
+        if (itemRows.length === 0) {
+            e.preventDefault();
+            alert('Please add at least one product item');
+            return false;
+        }
+        
+        // Check if all product items have values
+        let hasEmptyItem = false;
+        itemRows.forEach(function(row) {
+            const productSelect = row.querySelector('select[name*="product_id"]');
+            const quantityInput = row.querySelector('input[name*="quantity"]');
+            
+            if (!productSelect || !productSelect.value || !quantityInput || !quantityInput.value) {
+                hasEmptyItem = true;
+            }
+        });
+        
+        if (hasEmptyItem) {
+            e.preventDefault();
+            alert('Please fill in all product items (product and quantity)');
+            return false;
+        }
+        
+        return true;
+    });
+
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         selectedProducts.clear();
@@ -419,6 +486,11 @@
                 quantityInput.addEventListener('input', calculateTotalAmount);
             }
         });
+        
+        // Add initial product item row if none exist
+        if (existingRows.length === 0) {
+            addItemRow();
+        }
         
         // Initial refresh to update all dropdowns based on existing selections
         refreshProductSelects();
