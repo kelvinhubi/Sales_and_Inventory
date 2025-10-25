@@ -26,9 +26,8 @@ class RejectedGoodsController extends Controller
     public function create()
     {
         if (! Auth::check()) {
-            return redirect()->route('homepage');
+            return redirect()->route('Login');
         }
-
         $brands = Brand::all();
         $branches = Branch::all();
         $products = Product::select('id', 'name', 'price')->get();
@@ -44,10 +43,6 @@ class RejectedGoodsController extends Controller
 
     public function store(Request $request)
     {
-        if (! Auth::check()) {
-            return redirect()->route('homepage');
-        }
-
         $validated = $request->validate([
             'date' => 'required|date',
             'brand_id' => 'required|exists:brands,id',
@@ -57,104 +52,88 @@ class RejectedGoodsController extends Controller
             'reason' => 'required|string',
             'product_items.*.product_id' => 'required|exists:products,id',
             'product_items.*.quantity' => 'required|integer|min:1',
-            'product_items.*.price' => 'required|numeric|min:0',
-            'product_items.*.reason' => 'nullable|string',
         ]);
 
-        try {
-            // Create rejected goods record
-            $rejectedGood = RejectedGood::create([
-                'date' => $validated['date'],
-                'brand_id' => $validated['brand_id'],
-                'branch_id' => $validated['branch_id'],
-                'dr_no' => $validated['dr_no'],
-                'amount' => $validated['amount'],
-                'reason' => $validated['reason'],
-            ]);
+        $rejectedGood = RejectedGood::create($validated);
 
-            // Create rejected goods items
-            if (isset($validated['product_items'])) {
-                foreach ($validated['product_items'] as $item) {
-                    $rejectedGood->items()->create([
-                        'product_id' => $item['product_id'],
-                        'quantity' => $item['quantity'],
-                        'price' => $item['price'],
-                        'reason' => $item['reason'] ?? null,
-                    ]);
-                }
-            }
-
-            return redirect()->route('manager.rejected-goods.index')
-                           ->with('success', 'Rejected goods record created successfully!');
-        } catch (\Exception $e) {
-            return back()->withInput()->withErrors(['error' => 'Failed to create rejected goods record: ' . $e->getMessage()]);
+        foreach ($validated['product_items'] as $item) {
+            $rejectedGood->items()->create($item);
         }
+
+        return redirect()->route('manager.rejected-goods.index')->with('success', 'Rejected good created successfully.');
     }
 
     public function show(RejectedGood $rejectedGood)
     {
         if (! Auth::check()) {
-            return redirect()->route('homepage');
+            return redirect()->route('Login');
         }
-
+        $this->authorize('view', $rejectedGood);
         $rejectedGood->load(['brand', 'branch', 'items.product']);
 
         return view('manager.rejected-goods.show', compact('rejectedGood'));
     }
 
-    public function destroy(RejectedGood $rejectedGood)
+    public function edit(RejectedGood $rejectedGood)
     {
         if (! Auth::check()) {
-            return redirect()->route('homepage');
+            return redirect()->route('Login');
+        }
+        $this->authorize('update', $rejectedGood);
+        $brands = Brand::all();
+        $branches = Branch::all();
+
+        return view('manager.rejected-goods.edit', compact('rejectedGood', 'brands', 'branches'));
+    }
+
+    public function update(Request $request, RejectedGood $rejectedGood)
+    {
+        $this->authorize('update', $rejectedGood);
+
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'brand_id' => 'required|exists:brands,id',
+            'branch_id' => 'required|exists:branches,id',
+            'dr_no' => 'required|unique:rejected_goods,dr_no,' . $rejectedGood->id,
+            'amount' => 'required|numeric|min:0',
+            'reason' => 'required|string',
+            'product_items.*.product_id' => 'required|exists:products,id',
+            'product_items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        $rejectedGood->update($validated);
+
+        $rejectedGood->items()->delete();
+        foreach ($validated['product_items'] as $item) {
+            $rejectedGood->items()->create($item);
         }
 
-        try {
-            // Delete related items first
-            $rejectedGood->items()->delete();
+        return redirect()->route('manager.rejected-goods.index')->with('success', 'Rejected good updated successfully.');
+    }
 
-            // Delete the rejected goods record
-            $rejectedGood->delete();
+    public function destroy(RejectedGood $rejectedGood)
+    {
+        $this->authorize('delete', $rejectedGood);
+        $rejectedGood->delete();
 
-            return redirect()->route('manager.rejected-goods.index')
-                           ->with('success', 'Rejected goods record deleted successfully!');
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to delete rejected goods record: ' . $e->getMessage()]);
-        }
+        return redirect()->route('manager.rejected-goods.index')->with('success', 'Rejected good deleted successfully.');
     }
 
     public function getDrDetails($drNumber)
     {
-        if (! Auth::check()) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        $pastOrder = \App\Models\PastOrder::where('dr_number', $drNumber)
+                     ->with(['brand', 'branch'])
+                     ->first();
+
+        if (! $pastOrder) {
+            return response()->json(['error' => 'DR number not found'], 404);
         }
 
-        try {
-            $pastOrder = \App\Models\PastOrder::with(['items.product', 'brand', 'branch'])
-                                              ->where('dr_number', $drNumber)
-                                              ->first();
-
-            if (! $pastOrder) {
-                return response()->json(['error' => 'DR number not found'], 404);
-            }
-
-            $response = [
-                'brand_id' => $pastOrder->brand_id,
-                'branch_id' => $pastOrder->branch_id,
-                'total_amount' => $pastOrder->total_amount,
-                'items' => $pastOrder->items->map(function ($item) {
-                    return [
-                        'product_id' => $item->product_id,
-                        'product_name' => $item->product->name ?? 'Unknown',
-                        'quantity' => $item->quantity,
-                        'price' => $item->price,
-                        'total' => $item->quantity * $item->price,
-                    ];
-                }),
-            ];
-
-            return response()->json($response);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch DR details: ' . $e->getMessage()], 500);
-        }
+        return response()->json([
+            'brand_id' => $pastOrder->brand_id,
+            'brand_name' => $pastOrder->brand->name,
+            'branch_id' => $pastOrder->branch_id,
+            'branch_name' => $pastOrder->branch->name,
+        ]);
     }
 }
